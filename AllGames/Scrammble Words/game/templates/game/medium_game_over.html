@@ -1,0 +1,86 @@
+{% load static %}
+<html lang="en">
+<head>
+    <title>Game Over - Scramble Word Game</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'game/gamestyle.css' %}">
+    <style>
+      #exit-button {
+          position: fixed;
+          bottom: 10px;
+          left: 50%;
+          transform: translateX(-50%);
+          font-size: 20px;
+          padding: 10px 20px;
+          background: linear-gradient(45deg, #007BFF, #0056b3);
+          color: #fff;
+          text-decoration: none;
+          border-radius: 5px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+          transition: transform 0.2s, box-shadow 0.2s;
+      }
+      #exit-button:hover {
+          transform: translateX(-50%) translateY(-0.5px);
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+    <script>
+      // Logging function
+      function logEvent(screen, event) {
+        fetch('/log-event/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+          },
+          body: JSON.stringify({
+            screen: screen,
+            player: "{{ player_name }}",
+            event: event
+          })
+        })
+        .then(response => {
+          if (!response.ok) {
+            console.error("Logging failed", response.statusText);
+          }
+        })
+        .catch(error => console.error("Error logging event:", error));
+      }
+
+      // TTS for game over message
+      function playGameOverMessage() {
+          let correctCount = "{{ correct_count|default:'0' }}";
+          let wrongCount = "{{ wrong_count|default:'0' }}";
+          let message = "";
+          if (Number(correctCount) === 10) {
+              message = "Outstanding! You got all answers correct. Fantastic job, you're a true champion!";
+          } else {
+              message = "Game over! You've used all your attempts. You made " + correctCount + " correct answers and " + wrongCount + " wrong answers. Every mistake is a step toward success. Keep learning!";
+          }
+          const ttsUrl = `/tts/?text=${encodeURIComponent(message)}`;
+          const audio = new Audio(ttsUrl);
+          audio.muted = true;
+          audio.play().then(() => {
+              audio.muted = false;
+          }).catch(err => console.error("Audio play error:", err));
+      }
+
+      window.onload = function() {
+          playGameOverMessage();
+      }
+    </script>
+</head>
+<body>
+    <a id="exit-button" href="{% url 'select_difficulty' %}" onclick="logEvent('Medium Game Over', 'Exit Clicked');">Exit</a>
+    <div class="center-container">
+        <h1>Game Over!</h1>
+        <!-- Feedback for the last guess -->
+        <h2>Your last answer: {{ user_guess }}</h2>
+        <h2>Correct Word: {{ correct_word }}</h2>
+        <!-- Overall game statistics -->
+        <h2>Total Attempts: 10</h2>
+        <h2>Correct Answers: {{ correct_count }}</h2>
+        <h2>Wrong Answers: {{ wrong_count }}</h2>
+        <a href="{% url 'restart_medium' %}" onclick="logEvent('Medium Game Over', 'Play Again Clicked');">Play Again</a>
+    </div>
+</body>
+</html>

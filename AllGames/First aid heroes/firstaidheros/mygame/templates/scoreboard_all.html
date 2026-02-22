@@ -1,0 +1,174 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Scoreboard - All Games - First Aid Heroes</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #ff3e3e;
+    }
+    .score-section {
+      margin-bottom: 40px;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      background: #ff6464;
+      color: white;
+      margin: 10px auto;
+      padding: 10px;
+      border-radius: 10px;
+      width: 80%;
+      max-width: 600px;
+      text-align: center;
+    }
+    .reset-button {
+      display: flex;
+      justify-content: center;
+      margin-top: 30px;
+    }
+    .reset-button form button {
+      padding: 10px 20px;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .reset-button form button:hover {
+      background: darkred;
+    }
+    .back-home {
+      display: block;
+      text-align: center;
+      margin-top: 30px;
+      text-decoration: none;
+      font-weight: bold;
+      color: #ff3e3e;
+    }
+  </style>
+</head>
+<body>
+  <h1>All Game Scores</h1>
+
+  <div class="score-section">
+    <h2>Knee Knockdown Scores</h2>
+    {% if knee_scores %}
+      <ul>
+        {% for score in knee_scores %}
+          <li>{{ score.player.name }} - {{ score.score }}<br>
+              <small>{{ score.created|date:"SHORT_DATETIME_FORMAT" }}</small>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No scores for Knee Knockdown yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="score-section">
+    <h2>Fever Mania Scores</h2>
+    {% if fever_scores %}
+      <ul>
+        {% for score in fever_scores %}
+          <li>{{ score.player.name }} - {{ score.score }}<br>
+              <small>{{ score.created|date:"SHORT_DATETIME_FORMAT" }}</small>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No scores for Fever Mania yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="score-section">
+    <h2>Burn Emergency Scores</h2>
+    {% if burn_scores %}
+      <ul>
+        {% for score in burn_scores %}
+          <li>{{ score.player.name }} - {{ score.score }}<br>
+              <small>{{ score.created|date:"SHORT_DATETIME_FORMAT" }}</small>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No scores for Burn Emergency yet.</p>
+    {% endif %}
+  </div>
+
+  <!-- Reset Scoreboard Button -->
+  <div class="reset-button">
+    <form action="{% url 'clear_scores' %}" method="post" id="resetForm">
+      {% csrf_token %}
+      <button type="submit">Reset Scoreboard</button>
+    </form>
+  </div>
+
+  <a href="{% url 'home' %}" class="back-home" id="backHome">← Back to Home</a>
+
+  <!-- Logging and CSRF Helper Functions -->
+  {% csrf_token %}
+  <script>
+    // Utility to retrieve CSRF token from cookie if needed
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + "=")) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+    // Global logging function
+    function logData(dataObj) {
+      const timestamp = new Date().toISOString();
+      const logEntry = {
+        timestamp: timestamp,
+        page: dataObj.page || "Scoreboard - All Games",
+        player: localStorage.getItem("playerName") || "Guest",
+        event: dataObj.event || ""
+      };
+      console.log("Logging event:", logEntry);
+      fetch("/log_event/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken")
+        },
+        body: JSON.stringify(logEntry)
+      }).catch(err => console.error("Error logging event:", err));
+    }
+
+    // Log page load event
+    document.addEventListener("DOMContentLoaded", () => {
+      logData({ page: "Scoreboard - All Games", event: "Page Loaded" });
+    });
+
+    // Log Reset Scoreboard button submission
+    document.getElementById("resetForm").addEventListener("submit", () => {
+      logData({ page: "Scoreboard - All Games", event: "Reset Scoreboard clicked" });
+    });
+
+    // Log Back to Home click event
+    document.getElementById("backHome").addEventListener("click", () => {
+      logData({ page: "Scoreboard - All Games", event: "Back to Home clicked" });
+    });
+  </script>
+</body>
+</html>

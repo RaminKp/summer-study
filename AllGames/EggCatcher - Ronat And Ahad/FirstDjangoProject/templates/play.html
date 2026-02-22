@@ -1,0 +1,297 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Egg Catcher Game - Play</title>
+  <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Bangers&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
+                  url("{% static 'images/ye.webp' %}") no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #gameCanvas {
+      border: 2px solid #333;
+      background-color: rgba(0, 0, 0, 0.6);
+    }
+
+    .back-btn {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(45deg, #fff9c4, #fffde7);
+      color: #333;
+      padding: 12px 24px;
+      text-decoration: none;
+      border-radius: 50px;
+      font-family: 'Chewy', cursive;
+      font-size: 1.2em;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      z-index: 100;
+    }
+
+    .back-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .score {
+      position: absolute;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 28px;
+      color: #fff;
+      text-shadow: 2px 2px 4px #000;
+      font-family: 'Bangers', cursive;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 10px 20px;
+      border-radius: 20px;
+      z-index: 50;
+    }
+
+    .result-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Chewy', cursive;
+      text-align: center;
+      padding: 20px;
+      z-index: 20;
+    }
+
+    .result-overlay h1 {
+      font-size: 3em;
+      margin-bottom: 20px;
+      color: #ffea00;
+      text-shadow: 2px 2px 8px #000;
+    }
+
+    .result-overlay p {
+      font-size: 1.5em;
+      margin: 10px 0;
+    }
+
+    .result-overlay .button-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .result-overlay .btn {
+      background: linear-gradient(45deg, #fff9c4, #fffde7);
+      color: #333;
+      padding: 15px 30px;
+      text-decoration: none;
+      border-radius: 50px;
+      margin: 10px;
+      font-family: 'Chewy', cursive;
+      font-size: 1.2em;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+      border: none;
+    }
+
+    .result-overlay .btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <a href="/" class="back-btn">Back</a>
+
+  <canvas id="gameCanvas" width="400" height="600"></canvas>
+
+  <div class="score">
+    Time: <span id="timer">60</span>s | Caught: <span id="caught">0</span> | Dropped: <span id="dropped">0</span>
+  </div>
+
+  <div class="result-overlay" id="resultOverlay">
+    <h1>Time's Up!</h1>
+    <p>Caught: <span id="finalCaught"></span></p>
+    <p>Dropped: <span id="finalDropped"></span></p>
+    <div class="button-container">
+      <button class="btn" onclick="restartGame()">Restart</button>
+      <a href="/" class="btn">Back</a>
+    </div>
+  </div>
+
+  <script>
+    function speakMessage(message) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(message);
+      utterance.pitch = 1.2;
+      utterance.rate = 0.9;
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        const selectedVoice = voices.find(v => v.name.toLowerCase().includes("english"));
+        if (selectedVoice) utterance.voice = selectedVoice;
+      }
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function playCrackSound() {
+      new Audio("{% static 'sounds/egg_crack.mp3' %}").play();
+    }
+
+    function playBeep() {
+      new Audio("{% static 'sounds/beep.mp3' %}").play();
+    }
+
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const timerElement = document.getElementById("timer");
+    const caughtElement = document.getElementById("caught");
+    const droppedElement = document.getElementById("dropped");
+
+    const basketWidth = 100;
+    const basketHeight = 60;
+    let basketX = (canvas.width - basketWidth) / 2;
+    const basketSpeed = 7;
+
+    const eggRadius = 15;
+    let eggs = [];
+    let caughtEggs = 0;
+    let droppedEggs = 0;
+    let timeLeft = 60;
+    let gameRunning = true;
+    let timerInterval;
+
+    let rightPressed = false;
+    let leftPressed = false;
+
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+
+    function keyDownHandler(e) {
+      if (e.key === "Right" || e.key === "ArrowRight") rightPressed = true;
+      else if (e.key === "Left" || e.key === "ArrowLeft") leftPressed = true;
+    }
+
+    function keyUpHandler(e) {
+      if (e.key === "Right" || e.key === "ArrowRight") rightPressed = false;
+      else if (e.key === "Left" || e.key === "ArrowLeft") leftPressed = false;
+    }
+
+    function drawBasket() {
+      ctx.save();
+      ctx.font = "60px Chewy, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("🛒", basketX + basketWidth / 2, canvas.height - basketHeight / 2);
+      ctx.restore();
+    }
+
+    function createEgg() {
+      const eggX = Math.random() * (canvas.width - eggRadius * 2) + eggRadius;
+      const eggY = -eggRadius;
+      const eggSpeed = Math.random() * 1.0 + 1.0;
+      eggs.push({x: eggX, y: eggY, speed: eggSpeed});
+    }
+
+    function drawEggs() {
+      ctx.font = "40px Chewy, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      for (let i = eggs.length - 1; i >= 0; i--) {
+        const egg = eggs[i];
+        ctx.fillText("🥚", egg.x, egg.y);
+        egg.y += egg.speed;
+        if (
+          egg.y + eggRadius > canvas.height - basketHeight &&
+          egg.x > basketX && egg.x < basketX + basketWidth
+        ) {
+          caughtEggs++;
+          caughtElement.innerText = caughtEggs;
+          eggs.splice(i, 1);
+          playCrackSound();
+          continue;
+        }
+        if (egg.y - eggRadius > canvas.height) {
+          droppedEggs++;
+          droppedElement.innerText = droppedEggs;
+          eggs.splice(i, 1);
+        }
+      }
+    }
+
+    function moveBasket() {
+      if (rightPressed && basketX < canvas.width - basketWidth) basketX += basketSpeed;
+      else if (leftPressed && basketX > 0) basketX -= basketSpeed;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (!gameRunning) return;
+      drawBasket();
+      drawEggs();
+      moveBasket();
+      if (Math.random() < 0.02) createEgg();
+      requestAnimationFrame(draw);
+    }
+
+    function updateTimer() {
+      timeLeft--;
+      timerElement.innerText = timeLeft;
+      if (timeLeft === 10) speakMessage("You got only 10 seconds left!");
+      if (timeLeft <= 6 && timeLeft > 0) {
+        speakMessage(timeLeft.toString());
+        playBeep();
+      }
+      if (timeLeft <= 0) {
+        gameRunning = false;
+        clearInterval(timerInterval);
+        showResults();
+      }
+    }
+
+    function showResults() {
+      document.getElementById("finalCaught").innerText = caughtEggs;
+      document.getElementById("finalDropped").innerText = droppedEggs;
+      document.getElementById("resultOverlay").style.display = "flex";
+      speakMessage(`Time's up! You caught ${caughtEggs} eggs and dropped ${droppedEggs}. Click Back to go to the home screen or Restart to try again.`);
+    }
+
+    function restartGame() {
+      eggs = [];
+      caughtEggs = 0;
+      droppedEggs = 0;
+      timeLeft = 60;
+      gameRunning = true;
+      basketX = (canvas.width - basketWidth) / 2;
+      caughtElement.innerText = caughtEggs;
+      droppedElement.innerText = droppedEggs;
+      timerElement.innerText = timeLeft;
+      document.getElementById("resultOverlay").style.display = "none";
+      clearInterval(timerInterval);
+      timerInterval = setInterval(updateTimer, 1000);
+      draw();
+    }
+
+    timerInterval = setInterval(updateTimer, 1000);
+    draw();
+  </script>
+</body>
+</html>

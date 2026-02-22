@@ -1,0 +1,52 @@
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Scramble Word Game</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'game/style.css' %}">
+</head>
+<body>
+  <div class="center-container">
+    <h1>Scramble Word Game</h1>
+    <p>Hit the Keys and Solve the Mystery</p>
+    <!-- Input with border and box-sizing added -->
+    <input id="player_name" type="text" placeholder="Enter your name" required
+           style="border: 2px solid #000; padding: 5px; margin-bottom: 10px; box-sizing: border-box;">
+    <!-- Log Start Game click -->
+    <a href="#" onclick="logEvent('Home Page', 'Start Game Clicked'); startGame();">Start Game</a>
+  </div>
+
+  <script>
+    // Global logging function
+    function logEvent(screen, event) {
+      fetch('/log-event/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+          screen: screen,
+          player: "{{ player_name }}",
+          event: event
+        })
+      })
+      .then(response => {
+        if (!response.ok) {
+          console.error("Logging failed", response.statusText);
+        }
+      })
+      .catch(error => console.error("Error logging event:", error));
+    }
+    function startGame() {
+      var name = document.getElementById("player_name").value;
+      if(name.trim() === "") {
+        alert("Please enter your name");
+      } else {
+        // Redirect to the options view with player's name as a query parameter
+        window.location.href = "{% url 'options' %}?player_name=" + encodeURIComponent(name);
+      }
+    }
+  </script>
+</body>
+</html>

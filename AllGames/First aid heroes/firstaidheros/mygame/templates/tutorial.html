@@ -1,0 +1,218 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tutorial: Fever Mania</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <style>
+    body {
+      margin: 0;
+      font-family: "Comic Sans MS", cursive;
+    }
+    .video-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: calc(100vh - 120px);
+      z-index: -1;
+      overflow: hidden;
+    }
+    .video-container video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(0.95);
+    }
+    .game-container {
+      position: relative;
+      height: calc(100vh - 120px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+    }
+    .instructions {
+      font-size: 1.5rem;
+      color: white;
+      text-shadow: 1px 1px black;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .dropzone {
+      width: 300px;
+      height: 300px;
+      border: 3px dashed #ff3e3e;
+      border-radius: 15px;
+      background: rgba(255,255,255,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: #ff3e3e;
+    }
+    .palette-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 120px;
+      background: rgba(255,255,255,0.95);
+      padding: 10px 20px;
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      z-index: 10;
+    }
+    .palette-item {
+      width: 100px;
+      height: 100px;
+      border-radius: 10px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      flex-shrink: 0;
+    }
+    .palette-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .back-button {
+      position: fixed;
+      bottom: 130px;
+      left: 20px;
+      padding: 10px 20px;
+      background-color: #ff6464;
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: background 0.3s ease;
+      z-index: 50;
+    }
+    .back-button:hover {
+      background-color: #ff3e3e;
+    }
+  </style>
+</head>
+<body>
+  <!-- Background Video -->
+  <div class="video-container">
+    <video id="bg-video" autoplay loop muted>
+      <source src="{% static 'videos/childhasfever.mp4' %}" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+
+  <div class="game-container">
+    <div class="instructions" id="instructions">Watch how to treat a fever with first aid!</div>
+    <div class="dropzone" id="dropzone">Drop Zone</div>
+  </div>
+
+  <!-- Full Palette at Bottom -->
+  <div class="palette-container" id="palette"></div>
+
+  <!-- Back Button -->
+  <a href="{% url 'home' %}" class="back-button">Back to Home</a>
+
+  <script>
+    const steps = [
+      {
+        instruction: "Step 1: First, we check the temperature using a thermometer.",
+        item: "thermometer"
+      },
+      {
+        instruction: "Step 2: Next, we use a cold compress to cool the fever.",
+        item: "coldCompress"
+      }
+    ];
+
+    const imageMapping = {
+      antisepticCream: "{% static 'images/firstaiditems/9.png' %}",
+      thermometer: "{% static 'images/firstaiditems/4.png' %}",
+      tweezers: "{% static 'images/firstaiditems/10.png' %}",
+      gauze: "{% static 'images/firstaiditems/5.png' %}",
+      towel: "{% static 'images/firstaiditems/11.png' %}",
+      antiseptic: "{% static 'images/firstaiditems/6.png' %}",
+      iodine: "{% static 'images/firstaiditems/7.png' %}",
+      scissors: "{% static 'images/firstaiditems/2.png' %}",
+      ductTape: "{% static 'images/firstaiditems/13.png' %}",
+      cottonPads: "{% static 'images/firstaiditems/3.png' %}",
+      bandage: "{% static 'images/firstaiditems/1.png' %}",
+      coldCompress: "{% static 'images/firstaiditems/12.png' %}"
+    };
+
+    const synth = window.speechSynthesis;
+    let voices = [];
+    let currentStep = 0;
+
+    function speak(text, callback) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      const selectedVoice = voices.find(v => v.name.includes("Brian")) || voices[0];
+      if (selectedVoice) utterance.voice = selectedVoice;
+      utterance.pitch = 1.1;
+      utterance.rate = 1.05;
+      utterance.onend = callback;
+      synth.speak(utterance);
+    }
+
+    function simulateDragAndDrop(itemId) {
+      const dropzone = document.getElementById("dropzone");
+      const itemEl = document.querySelector(`.palette-item[data-item="${itemId}"]`);
+      if (itemEl) {
+        const clone = itemEl.cloneNode(true);
+        clone.style.width = "80px";
+        clone.style.height = "80px";
+        dropzone.innerHTML = "";
+        dropzone.appendChild(clone);
+      }
+    }
+
+    function runStep() {
+      if (currentStep >= steps.length) {
+        document.getElementById("instructions").innerText = "Great job! That’s how you help with a fever!";
+        speak("Great job! That’s how you help with a fever!");
+        return;
+      }
+      const step = steps[currentStep];
+      document.getElementById("instructions").innerText = step.instruction;
+      speak(step.instruction, () => {
+        simulateDragAndDrop(step.item);
+        currentStep++;
+        setTimeout(runStep, 3000);
+      });
+    }
+
+    function loadVoices() {
+      voices = synth.getVoices();
+      if (voices.length) {
+        runStep();
+      } else {
+        setTimeout(loadVoices, 100);
+      }
+    }
+
+    function generatePalette() {
+      const container = document.getElementById("palette");
+      for (const [item, src] of Object.entries(imageMapping)) {
+        const div = document.createElement("div");
+        div.className = "palette-item";
+        div.setAttribute("data-item", item);
+        div.innerHTML = `<img src="${src}" alt="${item}">`;
+        container.appendChild(div);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      generatePalette();
+      loadVoices();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,533 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Build Your First Aid Kit!</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+  <style>
+    /* Kid-friendly colors and styles */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Comic Sans MS', sans-serif;
+      background-color: #ffece6; /* A soft background color */
+    }
+
+    .container {
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* AI Doctor Section */
+    .ai-doctor {
+      flex: 1;
+      background: #ffd4d4; /* Light pink */
+      padding: 40px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-right: 2px dashed #ffa1a1;
+    }
+
+    .ai-doctor img {
+      max-width: 300%;
+      height: auto;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      border: 4px solid #ffa1a1; /* Makes it pop more */
+    }
+
+    .ai-dialogue {
+      font-size: 1.5rem;
+      text-align: center;
+      color: #333;
+      background: #ffecec;
+      padding: 20px;
+      border-radius: 15px;
+      border: 2px solid #ffa1a1;
+      max-width: 80%;
+    }
+
+    /* First Aid Box Section */
+    .first-aid-box {
+      flex: 2;
+      background: #fff;
+      padding: 20px;
+      box-sizing: border-box;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-left: 2px dashed #ffa1a1;
+      border-right: 2px dashed #ffa1a1;
+    }
+
+    .first-aid-box img {
+      width: 300%;
+      max-width: 660px;
+      z-index: 1;
+    }
+
+    .collected-items {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: grid;
+      grid-template-columns: repeat(5, auto);
+      column-gap: 0;
+      row-gap: 0;
+      justify-content: center;
+      align-items: center;
+      z-index: 2;
+    }
+
+    /* Palette Section */
+    .palette {
+      flex: 1;
+      background: #fff7cc; /* Soft yellow to match the theme */
+      padding: 20px;
+      box-sizing: border-box;
+      overflow-y: auto;
+      border-left: 2px dashed #ffa1a1;
+    }
+
+    .palette h2 {
+      text-align: center;
+      color: #ff6464;
+      font-size: 2rem;
+      margin-bottom: 15px;
+    }
+
+    .palette-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .palette-item {
+      width: 100px;
+      height: 100px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      border-radius: 10px;
+      transition: border 0.3s ease;
+      background-color: #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    .palette-item:hover {
+      border: 2px solid #ff6464;
+    }
+
+    .palette-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    /* Button Styles (Placed at the bottom of the first-aid-box) */
+    .button-container {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .back-button-left, .back-button-right {
+      padding: 10px 20px;
+      background-color: #ff6464;
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: background 0.3s ease;
+      flex: 1;
+      text-align: center;
+      margin: 0 5px;
+    }
+
+    .back-button-left:hover, .back-button-right:hover {
+      background-color: #ff3e3e;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 300;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: #fffaf0; /* Slightly tinted background for the modal */
+      padding: 30px;
+      border-radius: 20px;
+      width: 80%;
+      max-width: 600px;
+      text-align: center;
+      position: relative;
+    }
+
+    .modal-content p {
+      margin-bottom: 20px;
+      font-size: 1.2rem;
+      color: #444;
+    }
+
+    .modal-content h2 {
+      margin-top: 0;
+      font-size: 2rem;
+      color: #ff6464;
+    }
+
+    .modal-content button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      background: #ff6464;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .modal-content button:hover {
+      background: #ff3e3e;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- CSRF Token for logging POST requests -->
+  {% csrf_token %}
+  <script>
+    const csrfToken = '{{ csrf_token }}';
+  </script>
+
+  <!-- Logging and CSRF Helper Functions -->
+  <script>
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + "=")) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+    function logData(dataObj) {
+      const timestamp = new Date().toISOString();
+      const logEntry = {
+        timestamp: timestamp,
+        page: dataObj.page || "First Aid Kit",
+        player: localStorage.getItem("playerName") || "Guest",
+        event: dataObj.event || ""
+      };
+      console.log("Logging event:", logEntry);
+      fetch("/log_event/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken")
+        },
+        body: JSON.stringify(logEntry)
+      }).catch(err => console.error("Error logging event:", err));
+    }
+    // Log page load event
+    document.addEventListener("DOMContentLoaded", () => {
+      logData({ page: "Build Your First Aid Kit", event: "Page Loaded" });
+    });
+  </script>
+
+  <div class="container">
+    <!-- AI Doctor Section -->
+    <div class="ai-doctor">
+      <img src="{% static 'images/Aidoctor.png' %}" alt="Friendly Doctor Mascot">
+      <div class="ai-dialogue" id="aiDialogue">
+        Hey there, friend! Click on an item to learn more. Let’s get started!
+      </div>
+    </div>
+
+    <!-- First Aid Kit Box -->
+    <div class="first-aid-box" id="firstAidBox">
+      <img src="{% static 'images/firstaidbox.png' %}" alt="First Aid Box">
+      <div class="collected-items" id="collectedItems"></div>
+
+      <!-- Navigation Buttons -->
+      <div class="button-container">
+        <a href="{% url 'home' %}" class="back-button-left" onclick="logData({page:'Build Your First Aid Kit', event:'Back to Home clicked'})">Back to Home</a>
+        <a href="{% url 'play' %}" class="back-button-right" onclick="logData({page:'Build Your First Aid Kit', event:'Back to Game clicked'})">Back to Game</a>
+      </div>
+    </div>
+
+    <!-- Palette (Items to pick) -->
+    <div class="palette">
+      <h2>Pick an Item</h2>
+      <div class="palette-container" id="paletteContainer"></div>
+    </div>
+  </div>
+
+  <!-- Modal for Item Details -->
+  <div class="modal" id="itemModal">
+    <div class="modal-content">
+      <p id="itemDescription"></p>
+      <button id="modalConfirm">Got it!</button>
+    </div>
+  </div>
+
+  <!-- Final Modal -->
+  <div class="modal" id="finalModal">
+    <div class="modal-content">
+      <h2>Hooray!</h2>
+      <p>We’ve collected all the first aid items! Now we’re ready to learn how to use them.</p>
+      <button onclick="window.location.href='{% url 'play' %}'; logData({page:'Build Your First Aid Kit', event:'Navigated to Play'})">Back to Game</button>
+      <button onclick="window.location.href='{% url 'home' %}'; logData({page:'Build Your First Aid Kit', event:'Navigated to Home'})">Home</button>
+    </div>
+  </div>
+
+  <!-- Audio Elements -->
+  <audio id="clickSound" src="{% static 'sounds/click.mp3' %}"></audio>
+  <audio id="winSound" src="{% static 'sounds/clapping.mp3' %}"></audio>
+
+  <script>
+    let currentItemId = null;
+    const staticUrl = "{% static 'images/firstaiditems/' %}";
+    const synth = window.speechSynthesis;
+    let voices = [];
+    let itemsCollected = 0;
+
+    // Map each item to an image filename
+    const imageMapping = {
+      bandage: "1.png",
+      antisepticCream: "9.png",
+      thermometer: "4.png",
+      tweezers: "10.png",
+      gauze: "5.png",
+      towel: "11.png",
+      antiseptic: "6.png",
+      iodine: "7.png",
+      scissors: "2.png",
+      ductTape: "13.png",
+      cottonPads: "3.png",
+      coldCompress: "12.png"
+    };
+
+    // Kid-friendly item descriptions
+    const itemDescriptions = {
+      bandage: "This is a bandage. It covers small scratches!",
+      antisepticCream: "Antiseptic cream helps stop germs from growing.",
+      thermometer: "A thermometer checks how hot or cold your body is when you're sick.",
+      tweezers: "Tweezers help pick out tiny splinters or dirt.",
+      gauze: "Gauze pads help cover up bigger cuts.",
+      towel: "A towel dries up water or helps keep a wound clean.",
+      antiseptic: "Antiseptic helps wash away bad germs on a wound.",
+      iodine: "Iodine helps keep wounds from getting infected.",
+      scissors: "These scissors are used for cutting bandages or gauze.",
+      ductTape: "Duct tape can hold a bandage in place if you don't have other tape!",
+      cottonPads: "Cotton pads are soft and help clean scrapes or apply medicine.",
+      coldCompress: "A cold compress soothes bumps and reduces swelling."
+    };
+
+    // Function to speak text with Brian voice if available
+    function speak(text) {
+      logData({ page: "Build Your First Aid Kit", event: "Voice narration: " + text });
+      const utterance = new SpeechSynthesisUtterance(text);
+      let selectedVoice = voices.find(v => v.name.includes("BrianMultilingual") || v.name.includes("Brian"));
+      if (!selectedVoice && voices.length > 0) {
+        selectedVoice = voices[0];
+      }
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
+      utterance.rate = 1.1;
+      utterance.pitch = 1.2;
+      synth.speak(utterance);
+    }
+
+    // Preload voices and greet user
+    function loadVoices() {
+      voices = synth.getVoices();
+      if (!voices.length) {
+        setTimeout(loadVoices, 100);
+      } else {
+        speak("Hello friend! Let's collect all the items to build our awesome first aid kit or you can click on me to start the voice recognition!");
+      }
+    }
+    loadVoices();
+
+    // Play click sound and log event
+    function playClickSound() {
+      const clickAudio = document.getElementById("clickSound");
+      clickAudio.currentTime = 0;
+      clickAudio.play();
+      logData({ page: "Build Your First Aid Kit", event: "Click sound played" });
+    }
+
+    // Generate the palette of items
+    function generatePalette() {
+      const container = document.getElementById("paletteContainer");
+      for (const [item, filename] of Object.entries(imageMapping)) {
+        const div = document.createElement("div");
+        div.className = "palette-item";
+        div.setAttribute("data-item", item);
+        div.innerHTML = `<img src="${staticUrl + filename}" alt="${item}">`;
+        div.addEventListener("click", function() {
+          playClickSound();
+          currentItemId = item;
+          logData({ page: "Build Your First Aid Kit", event: "Palette item clicked: " + item });
+          showItemDetails(item);
+        });
+        container.appendChild(div);
+      }
+    }
+    document.addEventListener("DOMContentLoaded", generatePalette);
+
+    // Show item details in a modal, speak about the item, and log the event
+    function showItemDetails(item) {
+      const description = itemDescriptions[item] || "A helpful item!";
+      document.getElementById("itemDescription").innerText = description;
+      document.getElementById("aiDialogue").innerText = description;
+      speak(description);
+      logData({ page: "Build Your First Aid Kit", event: "Showing details for item: " + item });
+      document.getElementById("itemModal").style.display = "flex";
+    }
+
+    // Confirm button for the item modal
+    document.getElementById("modalConfirm").addEventListener("click", function() {
+      speechSynthesis.cancel();
+      logData({ page: "Build Your First Aid Kit", event: "Modal confirmed for item: " + currentItemId });
+      const modal = document.getElementById("itemModal");
+      if (currentItemId) {
+        const paletteItem = document.querySelector(`.palette-item[data-item="${currentItemId}"]`);
+        if (paletteItem) {
+          const clone = paletteItem.cloneNode(true);
+          clone.style.width = "50px";
+          clone.style.height = "50px";
+          document.getElementById("collectedItems").appendChild(clone);
+          paletteItem.remove();
+          itemsCollected++;
+          logData({ page: "Build Your First Aid Kit", event: "Item added to kit: " + currentItemId + " (Total collected: " + itemsCollected + ")" });
+          if (itemsCollected === 12) {
+            const finalModal = document.getElementById("finalModal");
+            finalModal.style.display = "flex";
+            const finalTitle = finalModal.querySelector("h2").innerText;
+            const finalMessage = finalModal.querySelector("p").innerText;
+            speak(finalTitle + " " + finalMessage);
+            document.getElementById("winSound").play();
+            logData({ page: "Build Your First Aid Kit", event: "All items collected. Showing final modal." });
+          }
+        }
+        currentItemId = null;
+      }
+      modal.style.display = "none";
+    });
+
+    // Stop speech when any back button is clicked
+    document.querySelectorAll('.back-button-left, .back-button-right').forEach(button => {
+      button.addEventListener('click', function() {
+        speechSynthesis.cancel();
+        logData({ page: "Build Your First Aid Kit", event: "Back button clicked - speech stopped" });
+      });
+    });
+
+    // -------------- SPEECH RECOGNITION with Auto Add to Kit --------------
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript.toLowerCase();
+        console.log("Heard:", transcript);
+        logData({ page: "Build Your First Aid Kit", event: "Speech recognized: " + transcript });
+        for (const item of Object.keys(itemDescriptions)) {
+          if (transcript.includes(item.toLowerCase())) {
+            speechSynthesis.cancel();
+            speak(`Adding the ${item} to your kit. ${itemDescriptions[item]}`);
+            const paletteItem = document.querySelector(`.palette-item[data-item="${item}"]`);
+            if (paletteItem) {
+              const clone = paletteItem.cloneNode(true);
+              clone.style.width = "50px";
+              clone.style.height = "50px";
+              document.getElementById("collectedItems").appendChild(clone);
+              paletteItem.remove();
+              itemsCollected++;
+              logData({ page: "Build Your First Aid Kit", event: "Item auto-added via voice: " + item + " (Total collected: " + itemsCollected + ")" });
+              if (itemsCollected === 12) {
+                const finalModal = document.getElementById("finalModal");
+                finalModal.style.display = "flex";
+                const finalTitle = finalModal.querySelector("h2").innerText;
+                const finalMessage = finalModal.querySelector("p").innerText;
+                speak(finalTitle + " " + finalMessage);
+                document.getElementById("winSound").play();
+                logData({ page: "Build Your First Aid Kit", event: "All items collected via voice. Showing final modal." });
+              }
+            } else {
+              speak(`Oops, looks like you've already added the ${item}.`);
+              logData({ page: "Build Your First Aid Kit", event: "Voice command for already added item: " + item });
+            }
+            return;
+          }
+        }
+        if (transcript.includes("back to home")) {
+          speechSynthesis.cancel();
+          speak("Heading back to home.");
+          logData({ page: "Build Your First Aid Kit", event: "Voice command: Back to Home" });
+          setTimeout(() => {
+            window.location.href = "{% url 'home' %}";
+          }, 1000);
+        } else if (transcript.includes("back to game")) {
+          speechSynthesis.cancel();
+          speak("Taking you back to the game.");
+          logData({ page: "Build Your First Aid Kit", event: "Voice command: Back to Game" });
+          setTimeout(() => {
+            window.location.href = "{% url 'play' %}";
+          }, 1000);
+        } else {
+          speechSynthesis.cancel();
+          speak("Hmm, I didn’t catch that item. Try saying a first aid item like 'bandage' or 'antiseptic'.");
+          logData({ page: "Build Your First Aid Kit", event: "Voice command not recognized: " + transcript });
+        }
+      };
+      recognition.onerror = function(event) {
+        console.warn("Speech recognition error:", event.error);
+        speechSynthesis.cancel();
+        speak("Something went wrong while listening.");
+        logData({ page: "Build Your First Aid Kit", event: "Speech recognition error: " + event.error });
+      };
+      document.querySelector(".ai-doctor").addEventListener("click", () => {
+        speechSynthesis.cancel();
+        speak("I'm listening. Say an item name to add it to your kit.");
+        logData({ page: "Build Your First Aid Kit", event: "Voice recognition started" });
+        recognition.start();
+      });
+    } else {
+      console.warn("SpeechRecognition not supported in this browser.");
+      logData({ page: "Build Your First Aid Kit", event: "SpeechRecognition not supported" });
+    }
+  </script>
+</body>
+</html>

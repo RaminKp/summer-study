@@ -1,0 +1,88 @@
+.VisualLearningModal__container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.VisualLearningModal {
+  padding: 64px;
+  width: max-content;
+  height: max-content;
+  display: flex;
+  flex-direction: column;
+}
+
+.VisualLearningModal__question-display {
+  font-size: 48px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.VisualLearningModal__block {
+  width: 30px;
+  height: 30px;
+  border: 1px solid black;
+  flex-shrink: 0;
+}
+
+.VisualLearningModal__parentBlockCol .VisualLearningModal__block {
+  background: crimson;
+}
+
+.VisualLearningModal__parentBlockRow  .VisualLearningModal__block {
+  background: purple;
+}
+
+.VisualLearningModal__parentBlockRowMain  .VisualLearningModal__block {
+  background: teal;
+}
+
+.VisualLearningModal__parentBlockRow {
+  display: flex;
+  gap: 16px;
+  border-left: 1px solid black;
+  padding-left: 16px;
+  padding-bottom: 16px;
+}
+
+.VisualLearningModal__parentBlockRowMain {
+  border-left: none;
+  padding-left: 0;
+  
+}
+
+.VisualLearningModal__parentBlockRowFirst {
+  padding-top: 16px;
+}
+
+.VisualLearningModal__hidden-block {
+  border: none
+}
+
+.VisualLearningModal__parentBlockCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-right: 1px solid black;
+  padding-right: 16px;
+  padding-top: 16px;
+}
+
+ 
+
+.VisualLearningModal__parentMain {
+  display: flex;
+  gap: 16px;
+}
+
+.VisualLearningModal__top {
+  display: flex;
+  gap: 16px;
+  border-bottom: 1px solid black;
+}
+
+

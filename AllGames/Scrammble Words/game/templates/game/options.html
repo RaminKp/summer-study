@@ -1,0 +1,117 @@
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Scramble Word Game - Options</title>
+  <link rel="stylesheet" type="text/css" href="{% static 'game/style.css' %}">
+  <style>
+    /* Modal overlay styling */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 1000;
+    }
+    .overlay-content {
+      background: rgba(255, 255, 255, 0.9);
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+      height: 35%;
+    }
+  </style>
+  <script>
+    // Global logging function
+    function logEvent(screen, event) {
+      fetch('/log-event/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+          screen: screen,
+          player: "{{ player_name }}",
+          event: event
+        })
+      })
+      .then(response => {
+        if (!response.ok) {
+          console.error("Logging failed", response.statusText);
+        }
+      })
+      .catch(error => console.error("Error logging event:", error));
+    }
+
+    let currentAudio = null;
+    function playTTS(message) {
+      const ttsUrl = `/tts/?text=${encodeURIComponent(message)}`;
+      console.log("TTS URL:", ttsUrl);
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(ttsUrl);
+      currentAudio.muted = true;
+      currentAudio.play().then(() => {
+          currentAudio.muted = false;
+      }).catch(err => console.error("Audio play error:", err));
+    }
+    function stopTTS() {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+    }
+    window.onload = function() {
+      // Auto-play a short greeting on page load
+      playTTS("Welcome to Scramble Word Game. Please select your difficulty or check the rules!");
+    };
+    document.addEventListener("DOMContentLoaded", function() {
+      const gameRulesButton = document.getElementById("game-rules-button");
+      const overlay = document.getElementById("rules-overlay");
+      const closeButton = document.getElementById("close-rules");
+      gameRulesButton.addEventListener("click", function(e) {
+        e.preventDefault();
+        overlay.style.display = "block";
+        let rulesText = "Game Rules: Rule 1: You have 10 attempts to solve as many words as possible. Rule 2: You have 15 seconds for each word. Rule 3: Type the correct unscrambled word in the input box. Rule 4: Each correct answer increases your score. Try to beat your best score!";
+        playTTS(rulesText);
+        // Log that Game Rules was clicked.
+        logEvent("Options Page", "Game Rules Clicked");
+      });
+      closeButton.addEventListener("click", function(e) {
+        e.preventDefault();
+        overlay.style.display = "none";
+        stopTTS();
+        logEvent("Options Page", "Close Rules Clicked");
+      });
+    });
+  </script>
+</head>
+<body>
+  <div class="center-container">
+    <h1>Choose an Option</h1>
+    <a href="{% url 'select_difficulty' %}" class="menu-button" onclick="logEvent('Options Page', 'Select Difficulty Clicked');">Select Difficulty</a>
+    <a href="#" id="game-rules-button" class="menu-button">Game Rules</a>
+    <a href="{% url 'home' %}" class="menu-button exit-button" onclick="logEvent('Options Page', 'Exit Clicked');">Exit</a>
+  </div>
+  <!-- Modal Overlay for Game Rules -->
+  <div id="rules-overlay" class="overlay">
+    <div class="overlay-content">
+      <h1>Game Rules</h1>
+      <p><strong>Rule 1:</strong> You have 10 attempts to solve as many words as possible.</p>
+      <p><strong>Rule 2:</strong> You have 60 seconds for each word.</p>
+      <p><strong>Rule 3:</strong> Type the correct unscrambled word in the input box.</p>
+      <p><strong>Rule 4:</strong> Each correct answer increases your score. Try to beat your best score!</p>
+      <a href="#" id="close-rules" class="menu-button back-button">Close</a>
+    </div>
+  </div>
+</body>
+</html>

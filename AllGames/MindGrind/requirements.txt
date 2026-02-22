@@ -1,0 +1,8 @@
+asgiref==3.8.1
+comtypes==1.4.10
+Django==5.1.7
+pypiwin32==223
+pyttsx3==2.98
+pywin32==310
+sqlparse==0.5.3
+tzdata==2025.1

@@ -1,0 +1,102 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Color Matching Game</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://code.responsivevoice.org/responsivevoice.js?key=ap2_7834e3aa-7875-4872-a3e2-01996af8fce3" defer></script>
+  <script defer>
+    document.addEventListener("DOMContentLoaded", function() {
+      if (typeof responsiveVoice !== "undefined") {
+        responsiveVoice.OnVoiceReady = function() {
+          console.log("ResponsiveVoice is ready.");
+        };
+        responsiveVoice.OnVoiceError = function(event) {
+          console.error("ResponsiveVoice error:", event);
+        };
+      }
+    });
+  </script>
+</head>
+<body>
+
+  <div class="welcome-screen" id="welcome-screen">
+    <h1>Welcome to Color Matching Game! 🎨</h1>
+    <p>- Drag and drop each item into the matching coloured bin.</p>
+    <p>- Correct answer adds 10 points.</p>
+    <p>- Incorrect answer deducts 5 points.</p>
+    <p>- To complete the game you need to score 100 points.</p>
+    <div class="btn-group">
+      <button id="start-btn" class="btn">Start Game 🚀</button>
+      <button id="tutorial-btn" class="btn">How to Play? 📖</button>
+      <button id="parental-guide-btn" class="btn">Parental Guide 👨‍👩‍👧</button>
+    </div>
+  </div>
+
+  <div class="tutorial-overlay" id="tutorial-overlay" style="display: none;">
+    <div class="tutorial-content">
+      <h2>How to Play</h2>
+      <p>
+        Watch this demo: a green item will slide into the green bin correctly (+10 points) and then be dropped incorrectly (-5 points).
+      </p>
+      <button id="tutorial-close-btn" class="btn">Skip Tutorial</button>
+    </div>
+  </div>
+
+  <div class="game-screen" id="game-screen" style="display: none;">
+    <h1 class="title">Color Matching Game</h1>
+
+    <div class="items-container">
+      <div class="draggable-item" draggable="true" data-color="green"><span class="emoji">🥦</span></div>
+      <div class="draggable-item" draggable="true" data-color="green"><span class="emoji">🥒</span></div>
+      <div class="draggable-item" draggable="true" data-color="yellow"><span class="emoji">🍋</span></div>
+      <div class="draggable-item" draggable="true" data-color="yellow"><span class="emoji">🧀</span></div>
+      <div class="draggable-item" draggable="true" data-color="orange"><span class="emoji">🍊</span></div>
+      <div class="draggable-item" draggable="true" data-color="orange"><span class="emoji">🥕</span></div>
+      <div class="draggable-item" draggable="true" data-color="purple"><span class="emoji">🍇</span></div>
+      <div class="draggable-item" draggable="true" data-color="purple"><span class="emoji">🍆</span></div>
+      <div class="draggable-item" draggable="true" data-color="purple"><span class="emoji">☂️</span></div>
+      <div class="draggable-item" draggable="true" data-color="blue"><span class="emoji">❄️</span></div>
+      <div class="draggable-item" draggable="true" data-color="blue"><span class="emoji">🐟</span></div>
+      <div class="draggable-item" draggable="true" data-color="blue"><span class="emoji">🌊</span></div>
+    </div>
+
+    <div class="bins-container">
+      <div class="bin" data-color="green" style="background-color: #228B22;"><span class="bin-label">Green</span></div>
+      <div class="bin" data-color="yellow" style="background-color: #fff9c4;"><span class="bin-label">Yellow</span></div>
+      <div class="bin" data-color="orange" style="background-color: #ffe0b2;"><span class="bin-label">Orange</span></div>
+      <div class="bin" data-color="purple" style="background-color: #d1c4e9;"><span class="bin-label">Purple</span></div>
+      <div class="bin" data-color="blue" style="background-color: #bbdefb;"><span class="bin-label">Blue</span></div>
+    </div>
+
+    <div class="score-container">
+      <div class="score-display" id="score">Score: 0</div>
+    </div>
+    <button id="reset-btn" class="btn">Reset Game</button>
+  </div>
+
+  <div class="winner-screen" id="winner-screen" style="display: none;">
+    <h1>Congratulations!</h1>
+    <p>You reached 100 points and are a Color Matching Champion!</p>
+    <button id="winner-reset-btn" class="btn">Play Again</button>
+  </div>
+
+  <div id="virtual-agent" class="chat-bubble" style="display: none;"></div>
+
+  <div id="parental-guide-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <h2>Parental Guide</h2>
+      <p><strong>🎓 Educational Purpose:</strong> This game helps children recognize and match colors using familiar objects like fruits, vegetables, and animals.</p>
+      <p><strong>🧠 Skills Developed:</strong> Visual discrimination, hand-eye coordination, cognitive decision-making, and basic categorization.</p>
+      <p><strong>🧩 How to Help:</strong> Sit with your child at first and describe the objects and colors. Encourage them to match colors correctly.</p>
+      <p><strong>🔈 Accessibility:</strong> Built-in voice assistant provides spoken instructions and encouragement.</p>
+      <button id="close-parental-guide-btn" class="btn">Close</button>
+    </div>
+  </div>
+
+  <script src="{% static 'js/main.js' %}" defer></script>
+
+</body>
+</html>

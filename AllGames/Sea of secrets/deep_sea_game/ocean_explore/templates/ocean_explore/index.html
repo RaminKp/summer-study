@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SEA OF SECRETS</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'ocean_explore/css/style.css' %}">
+</head>
+<body>
+
+  <!-- Splash Screen -->
+  <div id="splash-screen"
+     style="background-image: url('{% static 'ocean_explore/images/background_Image.jpg' %}'); background-size: cover; background-position: center;">
+    <h1>SEA OF SECRETS</h1>
+    <button id="openModalBtn" class="info-button">How to play</button>
+
+    <div id="myModal" class="howToModal">
+      <div class="howto-modal-content">
+          <span class="howto-close">&times;</span>
+          <h2>How to play</h2>
+          <p class="howto-modal-content-text">Welcome to Sea of secrets game! In this game we explore a lot of see creatures. You can press the arrow buttons to move your ship and once you reach a creature, you can learn different facts about them.</p>  
+          <p class="howto-modal-content-text">After few meters you will see a question about the creatures you saw! answer them to get more scores!</p>  
+      </div>
+    </div>
+    <br>
+    <button id="enter-game-btn">Start Game</button>
+
+  </div>
+
+  <!-- Audio -->
+  <audio id="bg-music" loop></audio>
+  <audio id="submarine-sound" loop></audio>
+
+  <!-- GAME UI (hidden initially) -->
+  <div id="game-ui" style="display: none;">
+    <!-- back to start Button -->
+    <div id="Buttons">
+    <img src="{% static 'ocean_explore/images/backWhite.png' %}" alt="backBtn" onclick="location.reload()"/>
+    <a href="xxxx"><img src="{% static "ocean_explore/images/controllerWhite.png" %}" alt=""></a>
+    </div>
+    <!-- Score -->
+    <div id="score-display" style="display: none;">Score: 0</div>
+
+    <!-- Depth Indicator -->
+    <div id="depth-indicator">Depth: 0 m</div>
+
+    <!-- Game Container -->
+    <div id="game-container">
+      <!-- Submarine -->
+      <div id="submarine">
+        <img src="{% static 'ocean_explore/images/submarine.png' %}" alt="Submarine">
+      </div>
+      <!-- Creatures & Text -->
+      <div id="content-container"></div>
+    </div>
+
+    <!-- Blinking Spots -->
+    <div id="blinking-spots"></div>
+  </div>
+
+  <!-- Fact Popup -->
+  <div id="fact-popup" class="modal">
+    <div class="modal-content" id="fact-content">
+      <span class="close" id="close-fact">&times;</span>
+      <div id="fact-text"></div>
+    </div>
+  </div>
+
+  <!-- Quiz Modal -->
+  <div id="quiz-modal" class="modal">
+    <div class="modal-content">
+      <span id="close-modal" class="close">&times;</span>
+      <h2>Quiz Time!</h2>
+      <p>Please type the full name!</p>
+      <p id="quiz-question"></p>
+      <input type="text" id="quiz-answer" placeholder="Type your answer">
+      <button id="mic-btn">🎤</button>
+      <button id="camera-btn">📷</button>
+      <button id="submit-quiz">Submit Answer</button>
+    </div>
+  </div>
+
+  <!-- QR Scan Modal -->
+  <div id="qr-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="close-qr">&times;</span>
+      <div id="qr-reader" style="width: 300px; margin: 0 auto;"></div>
+    </div>
+  </div>
+
+  <!-- User Info Modal -->
+  {% comment %} <div id="user-info" class="modal">
+    <div class="modal-content name-modal">
+      <h2>Enter Your Name</h2>
+      <input type="text" id="user-name" placeholder="Your Name">
+      <button id="name-mic-btn">🎤</button>
+      <button id="start-game">Start Game</button>
+    </div>
+  </div> {% endcomment %}
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script src="{% static 'ocean_explore/js/script.js' %}"></script>
+
+  <script>
+    // Get modal elements
+    var modal = document.getElementById("myModal");
+    var btn = document.getElementById("openModalBtn");
+    var span = document.getElementsByClassName("howto-close")[0];
+  
+    // Open the modal
+    btn.onclick = function () {
+        modal.style.display = "block";
+    }
+  
+    // Close the modal when clicking on the (x)
+    span.onclick = function () {
+        modal.style.display = "none";
+    }
+  
+    // Close the modal when clicking outside the content box
+    window.onclick = function (event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+  </script>
+</body>
+</html>

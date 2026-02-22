@@ -1,0 +1,562 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Knee Knockdown Game</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <style>
+    /* Mute/Unmute Button Styling */
+    #mute-toggle {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 110;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.8);
+      border: 2px solid #ff3e3e;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    /* Timer Styling */
+    #timer {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 110;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.8);
+      border: 2px solid #ff3e3e;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+    /* Score Info Styling (near the timer) */
+    #score-info {
+      position: fixed;
+      top: 50px;
+      left: 10px;
+      z-index: 110;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.8);
+      border: 2px solid #ff3e3e;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+    /* Video Container */
+    .video-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: calc(100%);
+      height: calc(100vh - 120px);
+      z-index: -1;
+      overflow: hidden;
+    }
+    .video-container video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(0.95);
+    }
+    /* Game Overlay Container */
+    .game-container {
+      position: relative;
+      width: 100%;
+      height: calc(100vh - 120px);
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .instructions {
+      font-size: 1.5rem;
+      color: white;
+      text-shadow: 1px 1px black;
+      margin-bottom: 20px;
+      text-align: center;
+      max-width: 60%;
+    }
+    .dropzone {
+      width: 300px;
+      height: 300px;
+      border: 3px dashed #ff3e3e;
+      border-radius: 15px;
+      background: rgba(255,255,255,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: #ff3e3e;
+      margin-bottom: 20px;
+    }
+    /* Palette Container at Bottom - Updated */
+    .palette-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 120px;
+      background: rgba(255,255,255,0.9);
+      padding: 10px 20px;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: flex-start;
+      gap: 10px;
+      z-index: 2;
+      overflow-x: auto;
+    }
+    .palette-item {
+      width: 100px;
+      height: 100px;
+      cursor: grab;
+      border: 2px solid transparent;
+      border-radius: 10px;
+      transition: border 0.3s ease;
+      flex-shrink: 0;
+    }
+    .palette-item:hover {
+      border: 2px solid #ff3e3e;
+    }
+    .palette-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    /* Navigation Buttons */
+    .back-button-left, .back-button-right {
+      position: fixed;
+      bottom: 130px;
+      padding: 10px 20px;
+      background-color: #ff6464;
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: background 0.3s ease;
+      z-index: 50;
+    }
+    .back-button-left {
+      left: 20px;
+    }
+    .back-button-right {
+      right: 20px;
+    }
+    .back-button-left:hover, .back-button-right:hover {
+      background-color: #ff3e3e;
+    }
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 200;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.7);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 15% auto;
+      padding: 20px;
+      border-radius: 10px;
+      width: 80%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .modal-content h2 {
+      margin-bottom: 20px;
+    }
+    .modal-content button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      background: #ff6464;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .modal-content button:hover {
+      background: #ff3e3e;
+    }
+    /* Sparkle Animation */
+    @keyframes sparkle {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+    .sparkle {
+      animation: sparkle 0.8s ease-out;
+    }
+    /* Shake Animation */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+    .shake {
+      animation: shake 0.5s;
+    }
+  </style>
+</head>
+<body>
+  <!-- CSRF Token -->
+  {% csrf_token %}
+  <script>
+    const csrfToken = '{{ csrf_token }}';
+  </script>
+
+  <!-- Logging and CSRF Helper Functions -->
+  <script>
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + "=")) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+    function logData(dataObj) {
+      const timestamp = new Date().toISOString();
+      const logEntry = {
+        timestamp: timestamp,
+        page: dataObj.page || "Knee Knockdown Game",
+        player: localStorage.getItem("playerName") || "Guest",
+        event: dataObj.event || ""
+      };
+      console.log("Logging event:", logEntry);
+      fetch("/log_event/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken")
+        },
+        body: JSON.stringify(logEntry)
+      }).catch(err => console.error("Error logging event:", err));
+    }
+    // Log page load event
+    document.addEventListener("DOMContentLoaded", () => {
+      logData({ page: "Knee Knockdown Game", event: "Page Loaded" });
+    });
+  </script>
+
+  <!-- Audio Elements for Win, Lose, and Click Sounds -->
+  <audio id="winSound" src="{% static 'sounds/clapping.mp3' %}"></audio>
+  <audio id="failSound" src="{% static 'sounds/fail.mp3' %}"></audio>
+  <audio id="clickSound" src="{% static 'sounds/click.mp3' %}"></audio>
+
+  <!-- Mute/Unmute Button -->
+  <button id="mute-toggle">Mute</button>
+
+  <!-- Timer Display -->
+  <div id="timer">Time: 30</div>
+  <!-- Score Info Display -->
+  <div id="score-info">
+    Current Points: <span id="currentPoints">0</span><br>
+    Last Change: <span id="lastChange">0</span>
+  </div>
+
+  <!-- Video Background Container -->
+  <div class="video-container">
+    <video id="bg-video" autoplay loop muted>
+      <source src="{% static 'videos/girlcrying.mp4' %}" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+
+  <!-- Game Overlay Container -->
+  <div class="game-container">
+    <div class="instructions" id="instructions">
+      (Narration will play first — game starts soon!)
+    </div>
+    <div class="dropzone" id="dropzone">Drop here</div>
+  </div>
+
+  <!-- Palette Container at Bottom -->
+  <div class="palette-container" id="palette">
+    <!-- Palette items will be generated by JavaScript -->
+  </div>
+
+  <!-- Navigation Buttons -->
+  <a href="{% url 'home' %}" class="back-button-left">Back to Home</a>
+  <a href="{% url 'play' %}" class="back-button-right">Back to Game</a>
+
+  <!-- Modal Popup -->
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <h2 id="modal-title"></h2>
+      <p id="modal-message"></p>
+      <button id="modal-continue">Continue</button>
+    </div>
+  </div>
+
+  <script>
+    /************************************************************
+     * 1. Speech Synthesis: Use "BrianMultilingual" or "Brian"
+     *************************************************************/
+    const synth = window.speechSynthesis;
+    let voices = [];
+    function speak(text, callback) {
+      logData({ page: "Knee Knockdown Game", event: "Voice narration: " + text });
+      const utterance = new SpeechSynthesisUtterance(text);
+      let selectedVoice = voices.find(v => v.name.includes("BrianMultilingual") || v.name.includes("Brian"));
+      if(!selectedVoice && voices.length > 0) {
+        selectedVoice = voices[0];
+      }
+      if(selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
+      utterance.rate = 1.1;
+      utterance.pitch = 1.1;
+      utterance.onend = () => {
+        if(callback) callback();
+      };
+      synth.speak(utterance);
+    }
+    function stopSpeech() {
+      speechSynthesis.cancel();
+      logData({ page: "Knee Knockdown Game", event: "Speech cancelled" });
+    }
+
+    // Kid-friendly story narration for knee injury
+    function narrateStory(callback) {
+      const storyText = `Oh no, ${playerName}! Our friend fell down and hurt her knee.
+      She's crying because her knee is in pain. We need to help her feel better.
+      We'll use the right first aid items to fix her knee. Let's do this together!`;
+      logData({ page: "Knee Knockdown Game", event: "Story narration started" });
+      speak(storyText, callback);
+    }
+    function loadVoices() {
+      voices = synth.getVoices();
+      if(!voices.length) {
+        setTimeout(loadVoices, 100);
+      } else {
+        narrateStory(() => {
+          logData({ page: "Knee Knockdown Game", event: "Story narration completed, starting timer" });
+          startTimer();
+        });
+      }
+    }
+    loadVoices();
+
+    /************************************************************
+     * 2. Game & Timer Variables
+     *************************************************************/
+    let playerName = localStorage.getItem("playerName") || "Player";
+    let points = 0;
+    let lastChange = 0;
+    let anyMistake = false;
+    let timeLimit = 30;
+    let timeRemaining = timeLimit;
+    let timerInterval = null;
+    const timerEl = document.getElementById("timer");
+    const instructionsEl = document.getElementById("instructions");
+    const dropzone = document.getElementById("dropzone");
+    const currentPointsEl = document.getElementById("currentPoints");
+    const lastChangeEl = document.getElementById("lastChange");
+    function updateScoreDisplay() {
+      currentPointsEl.innerText = points;
+      lastChangeEl.innerText = lastChange > 0 ? "+" + lastChange : lastChange;
+    }
+    updateScoreDisplay();
+
+    /************************************************************
+     * 3. Steps for Knee Knockdown
+     *************************************************************/
+    const steps = [
+      {
+        instruction: "Step 1: Drag the antiseptic to clean the wound.",
+        expectedItem: "antiseptic"
+      },
+      {
+        instruction: "Step 2: Drag the bandage to cover the wound.",
+        expectedItem: "bandage"
+      },
+      {
+        instruction: "Step 3: Drag the coldCompress to reduce swelling.",
+        expectedItem: "coldCompress"
+      }
+    ];
+    let currentStep = 0;
+
+    /************************************************************
+     * 4. Timer Logic (Starts after narration)
+     *************************************************************/
+    function startTimer() {
+      timerEl.innerText = "Time: " + timeRemaining;
+      instructionsEl.innerText = steps[currentStep].instruction;
+      speak(steps[currentStep].instruction);
+      timerInterval = setInterval(() => {
+        timeRemaining--;
+        timerEl.innerText = "Time: " + timeRemaining;
+        if(timeRemaining <= 0) {
+          clearInterval(timerInterval);
+          instructionsEl.innerText = `Time's up, ${playerName}! You lose!`;
+          dropzone.innerText = "Game Over";
+          dropzone.removeEventListener("drop", dropHandler);
+          logData({ page: "Knee Knockdown Game", event: "Time expired - game over" });
+          showModal(false);
+        }
+      }, 1000);
+    }
+
+    /************************************************************
+     * 5. Drag & Drop Setup
+     *************************************************************/
+    const imageMapping = {
+      antiseptic: "{% static 'images/firstaiditems/6.png' %}",
+      bandage: "{% static 'images/firstaiditems/1.png' %}",
+      coldCompress: "{% static 'images/firstaiditems/12.png' %}",
+      // Additional items available but not used in steps for knee knockdown
+      antisepticCream: "{% static 'images/firstaiditems/9.png' %}",
+      thermometer: "{% static 'images/firstaiditems/4.png' %}",
+      tweezers: "{% static 'images/firstaiditems/10.png' %}",
+      gauze: "{% static 'images/firstaiditems/5.png' %}",
+      towel: "{% static 'images/firstaiditems/11.png' %}",
+      iodine: "{% static 'images/firstaiditems/7.png' %}",
+      scissors: "{% static 'images/firstaiditems/2.png' %}",
+      ductTape: "{% static 'images/firstaiditems/13.png' %}",
+      cottonPads: "{% static 'images/firstaiditems/3.png' %}"
+    };
+    function generatePalette() {
+      const palette = document.getElementById("palette");
+      for (const [itemId, imgUrl] of Object.entries(imageMapping)) {
+        const div = document.createElement("div");
+        div.className = "palette-item";
+        div.setAttribute("draggable", "true");
+        div.setAttribute("data-item", itemId);
+        div.innerHTML = `<img src="${imgUrl}" alt="${itemId}">`;
+        div.addEventListener("dragstart", function(e) {
+          document.getElementById("clickSound").play();
+          logData({ page: "Knee Knockdown Game", event: "Drag started: " + itemId });
+          e.dataTransfer.setData("text/plain", itemId);
+        });
+        palette.appendChild(div);
+      }
+    }
+    document.addEventListener("DOMContentLoaded", generatePalette);
+
+    // Drop event handler
+    function dropHandler(e) {
+      e.preventDefault();
+      const droppedItem = e.dataTransfer.getData("text/plain");
+      if(droppedItem === steps[currentStep].expectedItem) {
+        dropzone.classList.add("sparkle");
+        lastChange = 20;
+        points += 20;
+        updateScoreDisplay();
+        dropzone.style.backgroundColor = "#d4edda";
+        dropzone.innerText = "Correct!";
+        logData({ page: "Knee Knockdown Game", event: "Correct drop: " + droppedItem + " (Step " + (currentStep+1) + ")" });
+        setTimeout(() => {
+          dropzone.classList.remove("sparkle");
+          dropzone.style.backgroundColor = "rgba(255,255,255,0.8)";
+          currentStep++;
+          if(currentStep < steps.length) {
+            instructionsEl.innerText = steps[currentStep].instruction;
+            dropzone.innerText = "Drop here";
+            speak(steps[currentStep].instruction);
+          } else {
+            instructionsEl.innerText = `Great job, ${playerName}!`;
+            dropzone.innerText = "Well Done!";
+            clearInterval(timerInterval);
+            logData({ page: "Knee Knockdown Game", event: "All steps completed successfully" });
+            showModal(true);
+          }
+        }, 1000);
+      } else {
+        dropzone.classList.add("shake");
+        lastChange = -10;
+        points -= 10;
+        if(points < 0) points = 0;
+        anyMistake = true;
+        updateScoreDisplay();
+        dropzone.style.backgroundColor = "#f8d7da";
+        dropzone.innerText = "Wrong, try again!";
+        logData({ page: "Knee Knockdown Game", event: "Incorrect drop: " + droppedItem + " (Expected: " + steps[currentStep].expectedItem + ")" });
+        speak("Oh no, you have the wrong item! Try again!");
+        setTimeout(() => {
+          dropzone.classList.remove("shake");
+          dropzone.style.backgroundColor = "rgba(255,255,255,0.8)";
+          dropzone.innerText = "Drop here";
+        }, 1000);
+      }
+    }
+    dropzone.addEventListener("drop", dropHandler);
+    dropzone.addEventListener("dragover", e => e.preventDefault());
+
+    /************************************************************
+     * 6. Modal Control
+     *************************************************************/
+    const modal = document.getElementById("modal");
+    const modalTitle = document.getElementById("modal-title");
+    const modalMessage = document.getElementById("modal-message");
+    const modalContinue = document.getElementById("modal-continue");
+
+    function showModal(isWin) {
+      speechSynthesis.cancel();
+      if(isWin) {
+        modalTitle.innerText = "Congratulations!";
+        modalMessage.innerText = `You won! Your final score is ${points}.`;
+        document.getElementById("winSound").play();
+        logData({ page: "Knee Knockdown Game", event: "Game won with score: " + points });
+      } else {
+        points = 0;
+        updateScoreDisplay();
+        modalTitle.innerText = "Game Over";
+        modalMessage.innerText = `You lost! Your final score is ${points}.`;
+        document.getElementById("failSound").play();
+        logData({ page: "Knee Knockdown Game", event: "Game lost - score reset to 0" });
+      }
+      modal.style.display = "block";
+      const finalSpeech = modalTitle.innerText + ". " + modalMessage.innerText;
+      speak(finalSpeech);
+    }
+
+    modalContinue.addEventListener("click", function() {
+      logData({ page: "Knee Knockdown Game", event: "Submitting score: " + points });
+      fetch('/record_score/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrfToken,
+        },
+        body: `level=knee_game&score=${points}`
+      }).then(() => {
+        window.location.href = '/scoreboard/';
+      });
+    });
+
+    /************************************************************
+     * 7. Mute/Unmute for background video
+     *************************************************************/
+    const muteToggle = document.getElementById("mute-toggle");
+    const bgVideo = document.getElementById("bg-video");
+    muteToggle.addEventListener("click", function() {
+      bgVideo.muted = !bgVideo.muted;
+      muteToggle.textContent = bgVideo.muted ? "Unmute" : "Mute";
+      logData({ page: "Knee Knockdown Game", event: "Background video mute toggled. Muted: " + bgVideo.muted });
+    });
+
+    /************************************************************
+     * 8. Stop speech when any back button is clicked
+     *************************************************************/
+    document.querySelectorAll('.back-button-left, .back-button-right').forEach(button => {
+      button.addEventListener('click', () => {
+        stopSpeech();
+        logData({ page: "Knee Knockdown Game", event: "Back button clicked - speech stopped" });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Scan Your ID</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial;
+            background-color: #fffed4;
+        }
+        h1 {
+            margin-top: 30px;
+        }
+        #video-container {
+            margin-top: 20px;
+            display: inline-block;
+            width: 640px;
+            height: 475px;
+            border: 3px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        img {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Please scan your ID</h1>
+    <div id="video-container">
+        <img src="{% url 'video_feed' %}"/>
+    </div>
+
+<script>
+    setInterval(() => {
+        fetch("{% url 'check_marker' %}")
+        .then(response => response.json())
+        .then(data => {
+            if (data.detected) {
+            window.location.href = "{% url 'games_page' %}";
+            }
+        });
+    }, 1000);
+</script>
+        
+</body>
+</html>

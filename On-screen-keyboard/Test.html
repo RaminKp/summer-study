@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple Pop-up Keyboard</title>
+  <style>
+    #inputField {
+      width: 200px;
+      padding: 10px;
+      margin: 20px;
+    }
+
+    #keyboard {
+      display: none;
+      width: 320px;
+      border: 1px solid black;
+      padding: 10px;
+      margin: 20px;
+      position: absolute;
+    }
+
+    #keyboard button {
+      width: 50px;
+      height: 40px;
+      margin: 5px;
+      cursor: pointer;
+    }
+
+    .arrow-row {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<input type="text" id="inputField">
+<button id="toggleKeyboard">Show/Hide Keyboard</button>
+
+<div id="keyboard">
+  <!-- Number Keys -->
+  <div>
+    <button onclick="input('1')">1</button>
+    <button onclick="input('2')">2</button>
+    <button onclick="input('3')">3</button>
+    <button onclick="input('4')">4</button>
+    <button onclick="input('5')">5</button>
+  </div>
+  <div>
+    <button onclick="input('6')">6</button>
+    <button onclick="input('7')">7</button>
+    <button onclick="input('8')">8</button>
+    <button onclick="input('9')">9</button>
+    <button onclick="input('0')">0</button>
+  </div>
+
+  <!-- Arrow Keys -->
+  <div class="arrow-row">
+    <button onclick="moveCursor('left')">←</button>
+    <button onclick="moveCursor('up')">↑</button>
+    <button onclick="moveCursor('down')">↓</button>
+    <button onclick="moveCursor('right')">→</button>
+  </div>
+
+  <!-- Backspace -->
+  <div>
+    <button onclick="del()">Back</button>
+  </div>
+</div>
+
+<script>
+  let keyboardVisible = false;
+
+  function input(value) {
+    const inputField = document.getElementById("inputField");
+    const start = inputField.selectionStart;
+    const end = inputField.selectionEnd;
+    const text = inputField.value;
+    inputField.value = text.slice(0, start) + value + text.slice(end);
+    inputField.selectionStart = inputField.selectionEnd = start + value.length;
+    inputField.focus();
+  }
+
+  function del() {
+    const inputField = document.getElementById("inputField");
+    const start = inputField.selectionStart;
+    const end = inputField.selectionEnd;
+    if (start === end && start > 0) {
+      inputField.value = inputField.value.slice(0, start - 1) + inputField.value.slice(end);
+      inputField.selectionStart = inputField.selectionEnd = start - 1;
+    } else {
+      inputField.value = inputField.value.slice(0, start) + inputField.value.slice(end);
+      inputField.selectionStart = inputField.selectionEnd = start;
+    }
+    inputField.focus();
+  }
+
+  function moveCursor(direction) {
+    const inputField = document.getElementById("inputField");
+    let pos = inputField.selectionStart;
+
+    switch (direction) {
+      case 'left':
+        if (pos > 0) inputField.selectionStart = inputField.selectionEnd = pos - 1;
+        break;
+      case 'right':
+        if (pos < inputField.value.length) inputField.selectionStart = inputField.selectionEnd = pos + 1;
+        break;
+      case 'up':
+      case 'down':
+        break;
+    }
+    inputField.focus();
+  }
+
+  function toggleKeyboard() {
+    const keyboard = document.getElementById("keyboard");
+    keyboard.style.display = keyboardVisible ? "none" : "block";
+    keyboardVisible = !keyboardVisible;
+  }
+
+  document.getElementById("toggleKeyboard").addEventListener("click", toggleKeyboard);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,71 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    text-align: center; /* from the external file */
+    background: url("images/homepage.webp") no-repeat center center fixed;
+    background-size: cover;
+}
+
+/* Center container using flexbox */
+.center-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100vh; /* Full viewport height */
+    color: #000000;
+}
+
+/* Heading styles for home page */
+h1 {
+    font-size: 2.3em;
+    color: #000000; /* White heading for homepage */
+    text-shadow:
+        2px 2px 3px rgba(0, 0, 0, 0.6),
+        4px 4px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Style for all link buttons */
+a {
+    font-size: 20px;
+    padding: 10px 20px;
+    background: linear-gradient(45deg, #007BFF, #0056b3);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+a:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Specific override for the Exit button */
+.exit-button {
+    background: linear-gradient(45deg, #ff0000, #950000);
+}
+
+.back-button {
+    background: linear-gradient(45deg, #ff0000, #950000);
+}
+/* Form and input styles */
+form {
+    margin-top: 20px;
+}
+
+input {
+    padding: 10px;
+    font-size: 16px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}

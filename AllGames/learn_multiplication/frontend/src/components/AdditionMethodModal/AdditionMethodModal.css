@@ -1,0 +1,37 @@
+.AdditionMethodModal__container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.AdditionMethodModal {
+  padding: 64px;
+  width: max-content;
+  height: max-content;
+  display: flex;
+  flex-direction: column;
+}
+
+.AdditionMethodModal {
+  text-align: center;
+}
+
+.AdditionMethodModal h2 {
+  font-size: 24px;
+}
+
+.AdditionMethodModal__steps {
+  margin-top: 20px;
+  display: flex;
+  gap: 16px;
+  font-size: 36px;
+}
+
+.AdditionMethodModal__step {
+  margin: 5px 0;
+  display: flex;
+  flex-shrink: 0;
+  color: orangered;
+}

@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WildGuess</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Parkinsans&family=Spicy+Rice&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/start.css' %}">
+  <script type="text/javascript" src="{% static 'javaScript/start.js' %}">
+  </script>
+</head>
+<body>
+
+  <div class="backToGames">
+    <a class="backToGamesBtn" href="xxxx"><img class="backToGamesBtn" src="{% static "images/controllerWhite.png" %}" alt=""></a>
+  </div>
+
+<div class="container">
+
+
+
+  <h1 class="title">WildGuess</h1>
+  {% comment %} <p>Get ready for a fun and educational adventure into the world of wildlife! In this game, you'll learn fascinating facts about animals from around the world.</p>  {% endcomment %}
+
+
+    <button id="openModalBtn" class="info-button">How to Play</button>
+
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>How to play</h2>
+            <p class="modal-content-text">Get ready for a fun and educational adventure into the world of wildlife! In this game, you'll learn fascinating facts about animals from around the world.</p>
+            <ul>
+              <li>You'll be given some key details about an animal.</li>  
+              <li>Based on these clues, you must guess the correct animal.</li>  
+              <li>Then, select 6 traits that best describe it.</li>  
+            </ul>  
+            <p class="modal-content-text">Think you know your animals? Let's find out! 🦁🐧🐍</p>
+        </div>
+    </div>
+
+    <br>
+    <a href="{% url 'penguin' %}">
+      <button id="startBtn" class="startBtn" name="Start">Start game</button>
+    </a>
+</div>
+
+
+
+<script>
+  // Get modal elements
+  var modal = document.getElementById("myModal");
+  var btn = document.getElementById("openModalBtn");
+  var span = document.getElementsByClassName("close")[0];
+
+  // Open the modal
+  btn.onclick = function () {
+      modal.style.display = "block";
+  }
+
+  // Close the modal when clicking on the (x)
+  span.onclick = function () {
+      modal.style.display = "none";
+  }
+
+  // Close the modal when clicking outside the content box
+  window.onclick = function (event) {
+      if (event.target == modal) {
+          modal.style.display = "none";
+      }
+  }
+</script>
+
+</body>
+</html>

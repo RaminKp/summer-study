@@ -1,0 +1,185 @@
+body {
+  min-height: 100vh;
+  background-image: url('/static/images/background.jpg');
+  background-size: cover; /* Ensures the image covers the entire element */
+  background-position: center; /* Centers the image */
+  background-repeat: no-repeat; /* Prevents the image from repeating */
+}
+
+.container{
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  min-height: 100vh;
+  text-align: center;
+  font-family: "Parkinsans", serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.player{
+  display: grid;
+  grid-template-rows: repeat(6,1fr);
+}
+
+.playerTitle{
+  grid-row: 1/2;
+  position: relative;
+  top: 150px;
+  color: aliceblue;
+}
+
+.questionPlace{
+  position: relative;
+  bottom: 40px;
+}
+
+
+.questionText {
+  color: aliceblue;
+  width: 100%;
+  white-space: nowrap;    
+  overflow: hidden;        
+  font-size: 30px;
+  margin-bottom: 2px;
+  border-right: 2px solid #000; 
+  animation: reveal 4s ease-out forwards;
+}
+
+@keyframes reveal {
+  from {
+      width: 0%; /* Start hidden */
+  }
+  to {
+      width: 100%; /* Gradually reveal text */
+  }
+}
+
+/* .correctAnswer{
+  color: aliceblue;
+}
+
+.wrongAnswer{
+  color: aliceblue;
+} */
+
+.host{
+  align-content: end;
+}
+
+.hostImg{
+  position: relative;
+  right: 20px;
+}
+
+.buttonPlace{
+  grid-row: 5/6;
+  width: fit-content;
+  justify-self: center;
+}
+
+.button a{
+  width: 100px;
+  height: 80px;
+  background-color:#FFA12B;
+  display:block;
+  position:relative;
+  
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  text-shadow: 0px 1px 0px #000;
+  filter: dropshadow(color=#000, offx=0px, offy=1px);
+  box-shadow:inset 0 1px 0 #FFE5C4, 0 10px 0 #915100;
+  border-radius: 30px;
+}
+
+.button a.pressed{
+  top:10px;
+  background-color:#F78900;
+  
+  -webkit-box-shadow:inset 0 1px 0 #FFE5C4, inset 0 -3px 0 #915100;
+  -moz-box-shadow:inset 0 1px 0 #FFE5C4, inset 0 -3px 0 #915100;
+  box-shadow:inset 0 1px 0 #FFE5C4, inset 0 -3px 0 #915100;
+}
+
+.button:after{
+  content:"";
+  height:100%;
+  width:100%;
+  padding:4px;
+  position: absolute;
+  bottom:-15px;
+  left:-4px;
+  z-index:-1;
+  /* background-color:#2B1800; */
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+}
+
+.answer{
+  font-family: "Parkinsans", serif;
+  font-size: 1.1rem;
+  text-align: left;
+  color: #e5e5e5;
+  margin-bottom: 15px;  
+  background-color: transparent;
+  border: 1px solid #f1eaea;
+  border-radius: 8px;
+  box-sizing: border-box;
+  display: inline-block;
+  font-weight: 600;
+  line-height: 20px;
+  margin: 10px;
+  outline: none;
+  padding: 3px 8px;
+  position: relative;
+  text-decoration: none;
+}
+
+.Btn {
+  background-color: #FFFFFF;
+  border: 1px solid #222222;
+  border-radius: 8px;
+  box-sizing: border-box;
+  color: #222222;
+  cursor: pointer;
+  display: inline-block;
+  font-family: "Helvetica Neue",sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+  margin: 10px;
+  outline: none;
+  padding: 3px 13px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  touch-action: manipulation;
+  transition: box-shadow .2s,-ms-transform .1s,-webkit-transform .1s,transform .1s;
+  user-select: none;
+  -webkit-user-select: none;
+  width: auto;
+}
+
+.Btn:focus-visible {
+  box-shadow: #222222 0 0 0 2px, rgba(255, 255, 255, 0.8) 0 0 0 4px;
+  transition: box-shadow .2s;
+}
+
+.Btn:active {
+  background-color: #F7F7F7;
+  border-color: #000000;
+  transform: scale(.96);
+}
+
+.Btn:disabled {
+  border-color: #DDDDDD;
+  color: #DDDDDD;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.feedbackText{
+  color: aliceblue;
+  font-size: 20px;
+}

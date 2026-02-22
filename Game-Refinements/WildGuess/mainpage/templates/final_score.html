@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Final Score</title>
+    <link rel="stylesheet" href="{% static 'css/finalScore.css' %}">
+</head>
+<body>
+    <h1>Game Summary</h1>
+
+    <ul>
+        {% for animal, score in game_scores.items %}
+            <li>{{ animal|title }}: {{ score }}/6</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Total Score: {{ total_score }}/25</h2>
+
+    <a href="{% url 'start' %}">
+        <button class="restart-button">Play Again</button>
+    </a>
+</body>
+</html>

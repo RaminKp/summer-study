@@ -1,0 +1,189 @@
+* {
+  margin: 17px 2px;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  background-color: #1c1c1c;
+  color: whitesmoke;
+  font-size: 0;
+}
+
+.container{
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  min-height: 100vh;
+  text-align: center;
+  align-items: start;
+  font-family: "Parkinsans", serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+h1{
+  font-family: "Arial", sans-sarif;
+  font-size: 2rem;
+  color: #daa543;
+  padding-bottom: 20px;
+  margin-top: 0;
+}
+
+
+.traitBoxInput{
+  border-width: 1px;
+  border-radius: 15px;
+  border-color: bisque;
+  width: 180px;
+  height: 50px;
+  background-color: transparent;
+  font-size: 20px;
+  color: aliceblue;
+  padding: 10px;
+  text-align: center;
+}
+
+option{
+  background-color: rgb(28, 28, 28);
+}
+
+.optionBox{
+  color: white;
+  background-color: black;
+}
+
+
+.playerTitle{
+  position: block;
+  color: aliceblue;
+}
+
+.backBtn{
+  width: 34px;
+  position: fixed;
+  left: 40px;
+}
+
+
+.animalImage{
+  justify-content: center;
+  text-align: center;
+}
+
+img{
+  width: 220px;
+  margin-bottom: 30px;
+}
+
+.penguinImg{
+  display: none;
+}
+
+.hoverText {
+  position: relative;
+  text-align: justify;
+  background-color: rgba(74, 74, 74, 0.7);
+  margin: 10px;
+  color: aliceblue;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  display: none; /* Initially hidden */
+}
+
+.questionImg{
+  display: inline-block;
+}
+
+.btn{
+  border-radius: 15px;
+  padding: 10px;
+  margin: 10px;
+  width: 100px;
+  background-color: rgba(112, 108, 104, 0.407);
+  color: whitesmoke;
+  font-size: 18px;
+  text-decoration: none;
+}
+
+.submitBtn{
+  display: inline-block;
+}
+
+.scoreMessage{
+  display: none;
+  font-family: "Arial", sans-sarif;
+  font-size: 2rem;
+  color: #daa543;
+  padding-bottom: 20px;
+}
+
+.nextBtn{
+  display: none;
+}
+
+.href{
+  text-decoration: none;
+  color: white;
+}
+
+.specsBoxText{
+  border: 1px dashed #ffe4c4;
+  border-radius: 15px;
+  padding: 10px;
+  margin: 20px;
+  width: 180px;
+  background-color: rgba(223, 212, 200, 0.17);
+  color: whitesmoke;
+  font-size: 18px;
+}
+
+.circle{
+  display: inline-block;
+  margin-left: 10px;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+}
+
+.greenClass{
+  background-color: green;
+}
+
+.redClass{
+  background-color: red;
+}
+
+p {
+  margin-block-start: 0em;
+  margin-block-end: 0;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+  justify-self: center;
+  unicode-bidi: isolate;
+}
+
+.circle{
+  display: inline-block;
+  margin-left: 10px;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+}
+
+.greenClass{
+  background-color: green;
+}
+
+.redClass{
+  background-color: red;
+}
+
+.backgroundAnimal{
+  width: 80px;
+}
+
+
+

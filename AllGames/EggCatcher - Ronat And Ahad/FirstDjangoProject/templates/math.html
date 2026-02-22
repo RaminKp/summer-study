@@ -1,0 +1,361 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Egg Catcher Game - Math Mode</title>
+  <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Bangers&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
+                  url("{% static 'images/ye.webp' %}") no-repeat center center fixed;
+      background-size: cover;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .back-btn {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(45deg, #fff9c4, #fffde7);
+      color: #333;
+      padding: 12px 24px;
+      text-decoration: none;
+      border-radius: 50px;
+      font-family: 'Chewy', cursive;
+      font-size: 1.2em;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      z-index: 100;
+    }
+
+    .back-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .score {
+      position: absolute;
+      top: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 28px;
+      color: #fff;
+      text-shadow: 2px 2px 4px #000;
+      font-family: 'Bangers', cursive;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 10px 20px;
+      border-radius: 20px;
+      z-index: 50;
+    }
+
+    .math-question {
+      position: absolute;
+      top: 0px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 40px;
+      color: #fff;
+      text-shadow: 2px 2px 6px #000;
+      font-family: 'Bangers', cursive;
+      z-index: 20;
+    }
+
+    #gameCanvas {
+      display: block;
+      margin: 120px auto 0;
+      border: 2px solid #333;
+      background-color: rgba(0,0,0,0.6);
+    }
+
+    .result-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-family: 'Chewy', cursive;
+      z-index: 30;
+    }
+
+    .result-overlay h1 {
+      font-size: 3em;
+      margin-bottom: 20px;
+      color: #ffea00;
+      text-shadow: 2px 2px 8px #000;
+    }
+
+    .result-overlay p {
+      font-size: 1.5em;
+      margin: 10px 0;
+    }
+
+    .result-overlay .button-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .result-overlay .btn {
+      background: linear-gradient(45deg, #fff9c4, #fffde7);
+      color: #333;
+      padding: 15px 30px;
+      margin: 10px;
+      text-decoration: none;
+      border-radius: 50px;
+      font-family: 'Chewy', cursive;
+      font-size: 1.2em;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+      border: none;
+    }
+
+    .result-overlay .btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+<body>
+  <a href="/" class="back-btn">Back</a>
+  <div class="score">
+    Time: <span id="timer">60</span>s | Score: <span id="score">0</span> | Wrong: <span id="wrongCount">0</span>
+  </div>
+  <div class="math-question" id="mathQuestion">?</div>
+  <canvas id="gameCanvas" width="400" height="600"></canvas>
+
+  <div class="result-overlay" id="resultOverlay">
+    <h1>Time's Up!</h1>
+    <p>Score: <span id="finalScore"></span></p>
+    <p>Wrong: <span id="finalWrong"></span></p>
+    <div class="button-container">
+      <button class="btn" onclick="restartGame()">Restart</button>
+      <a href="/" class="btn">Back</a>
+    </div>
+  </div>
+
+  <script>
+    function speakMessage(message) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(message);
+      utterance.pitch = 1.2;
+      utterance.rate = 0.9;
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        const selectedVoice = voices.find(v => v.name.toLowerCase().includes("english"));
+        if (selectedVoice) utterance.voice = selectedVoice;
+      }
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function speakAnswerFeedback(isCorrect) {
+      const positive = ["Great job!", "Correct!", "You're doing awesome!", "Nice one!", "You got it!"];
+      const negative = ["Oops, not quite.", "Try again!", "Wrong answer.", "You'll get the next one!", "Keep trying!"];
+      const message = isCorrect ? positive[Math.floor(Math.random() * positive.length)] : negative[Math.floor(Math.random() * negative.length)];
+      speakMessage(message);
+    }
+
+    function playBeep() {
+      new Audio("{% static 'sounds/beep.mp3' %}").play();
+    }
+
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const mathQuestionElement = document.getElementById("mathQuestion");
+    const timerElement = document.getElementById("timer");
+    const scoreElement = document.getElementById("score");
+    const wrongCountElement = document.getElementById("wrongCount");
+    const resultOverlay = document.getElementById("resultOverlay");
+    const finalScoreElement = document.getElementById("finalScore");
+    const finalWrongElement = document.getElementById("finalWrong");
+
+    let timeLeft = 60;
+    let gameRunning = true;
+    let timerInterval;
+    let score = 0;
+    let wrongAnswers = 0;
+    let currentQuestion = "";
+    let currentAnswer = 0;
+    let eggs = [];
+
+    const basketWidth = 100;
+    const basketHeight = 60;
+    let basketX = (canvas.width - basketWidth) / 2;
+    const basketSpeed = 7;
+
+    const eggRadius = 20;
+
+    let rightPressed = false;
+    let leftPressed = false;
+
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+
+    function keyDownHandler(e) {
+      if (e.key === "Right" || e.key === "ArrowRight") rightPressed = true;
+      if (e.key === "Left" || e.key === "ArrowLeft") leftPressed = true;
+    }
+
+    function keyUpHandler(e) {
+      if (e.key === "Right" || e.key === "ArrowRight") rightPressed = false;
+      if (e.key === "Left" || e.key === "ArrowLeft") leftPressed = false;
+    }
+
+    function generateMathQuestion() {
+      let a = Math.floor(Math.random() * 10) + 1;
+      let b = Math.floor(Math.random() * 10) + 1;
+      const op = Math.random() < 0.5 ? "+" : "-";
+      if (op === "-" && a < b) [a, b] = [b, a];
+      currentQuestion = `${a} ${op} ${b} = ?`;
+      currentAnswer = op === "+" ? a + b : a - b;
+      mathQuestionElement.innerText = currentQuestion;
+    }
+
+    function spawnEggs() {
+      eggs = [];
+      const correctEggX = Math.floor(Math.random() * (canvas.width - 2 * eggRadius)) + eggRadius;
+      eggs.push({ x: correctEggX, y: -eggRadius, speed: Math.random() * 1.0 + 1.0, answer: currentAnswer, isCorrect: true });
+      for (let i = 0; i < 3; i++) {
+        let wrong;
+        do { wrong = currentAnswer + Math.floor(Math.random() * 5) - 2; } while (wrong === currentAnswer || wrong < 0);
+        let wrongEggX;
+        do { wrongEggX = Math.floor(Math.random() * (canvas.width - 2 * eggRadius)) + eggRadius; } while (Math.abs(wrongEggX - correctEggX) < 50);
+        eggs.push({ x: wrongEggX, y: -eggRadius, speed: Math.random() * 1.0 + 1.0, answer: wrong, isCorrect: false });
+      }
+    }
+
+    function updateGame() {
+      if (rightPressed && basketX < canvas.width - basketWidth) basketX += basketSpeed;
+      if (leftPressed && basketX > 0) basketX -= basketSpeed;
+      for (let i = eggs.length - 1; i >= 0; i--) {
+        const egg = eggs[i];
+        egg.y += egg.speed;
+
+        if (
+          egg.y + eggRadius > canvas.height - basketHeight &&
+          egg.y - eggRadius < canvas.height &&
+          egg.x > basketX &&
+          egg.x < basketX + basketWidth
+        ) {
+          if (egg.isCorrect) {
+            score++;
+            scoreElement.innerText = score;
+            speakAnswerFeedback(true);
+          } else {
+            wrongAnswers++;
+            wrongCountElement.innerText = wrongAnswers;
+            speakAnswerFeedback(false);
+          }
+          generateMathQuestion();
+          spawnEggs();
+          break;
+        }
+
+        // Missed any egg = wrong
+        if (egg.y - eggRadius > canvas.height) {
+          wrongAnswers++;
+          wrongCountElement.innerText = wrongAnswers;
+          speakAnswerFeedback(false);
+          generateMathQuestion();
+          spawnEggs();
+          break;
+        }
+      }
+    }
+
+    function drawBasket() {
+      ctx.save();
+      ctx.font = "60px Chewy, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("🛒", basketX + basketWidth / 2, canvas.height - basketHeight / 2);
+      ctx.restore();
+    }
+
+    function drawEggs() {
+      for (let egg of eggs) {
+        ctx.font = "40px Chewy, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "#fff";
+        ctx.fillText("🥚", egg.x, egg.y);
+        ctx.font = "20px Roboto, sans-serif";
+        ctx.fillStyle = "#000";
+        ctx.fillText(egg.answer, egg.x, egg.y);
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBasket();
+      drawEggs();
+    }
+
+    function gameLoop() {
+      if (!gameRunning) return;
+      updateGame();
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    function updateTimer() {
+      timeLeft--;
+      timerElement.innerText = timeLeft;
+      if (timeLeft === 10) speakMessage("You got only 10 seconds left!");
+      if (timeLeft <= 6 && timeLeft > 0) {
+        speakMessage(timeLeft.toString());
+        playBeep();
+      }
+      if (timeLeft <= 0) {
+        gameRunning = false;
+        clearInterval(timerInterval);
+        showResults();
+      }
+    }
+
+    function showResults() {
+      finalScoreElement.innerText = score;
+      finalWrongElement.innerText = wrongAnswers;
+      resultOverlay.style.display = "flex";
+      let msg = score >= 15 ? "Excellent job!" : score >= 8 ? "Good effort!" : "Better luck next time!";
+      speakMessage(`Time's up! You scored ${score} and got ${wrongAnswers} wrong. ${msg}`);
+    }
+
+    function restartGame() {
+      eggs = [];
+      score = 0;
+      wrongAnswers = 0;
+      timeLeft = 60;
+      gameRunning = true;
+      basketX = (canvas.width - basketWidth) / 2;
+      scoreElement.innerText = score;
+      wrongCountElement.innerText = wrongAnswers;
+      timerElement.innerText = timeLeft;
+      generateMathQuestion();
+      spawnEggs();
+      resultOverlay.style.display = "none";
+      clearInterval(timerInterval);
+      timerInterval = setInterval(updateTimer, 1000);
+      gameLoop();
+    }
+
+    generateMathQuestion();
+    spawnEggs();
+    timerInterval = setInterval(updateTimer, 1000);
+    gameLoop();
+  </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Start Page</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #fffed4;
+    }
+
+    #startBtn {
+      width: 35%;
+      cursor: pointer;
+      transition: transform 0.3s;
+      position: absolute;
+    }
+
+  </style>
+</head>
+<body>
+  <a href="{% url "scan_page" %}"><img id="startBtn" src="{% static "images/startBtn.png" %}" alt=""></a>
+
+  <script>
+    const btn = document.getElementById('startBtn');
+    let clicked = false;
+    let mover;
+    let moving = false;
+  
+    btn.addEventListener('click', () => {
+      clicked = true;
+      clearInterval(mover);
+      moving = false;
+      centerButton(); // Re-center on click
+    });
+  
+    document.addEventListener('mousemove', () => {
+      if (moving) {
+        clearInterval(mover);
+        moving = false;
+        centerButton();
+      }
+    });
+  
+    setTimeout(() => {
+      if (!clicked) {
+        moveButton(); // initial move
+        mover = setInterval(moveButton, 1500); // move every 1.5 seconds
+        moving = true;
+      }
+    }, 20000);
+  
+    function moveButton() {
+      const maxX = window.innerWidth - btn.offsetWidth;
+      const maxY = window.innerHeight - btn.offsetHeight;
+      const randomX = Math.random() * maxX;
+      const randomY = Math.random() * maxY;
+  
+      btn.style.left = `${randomX}px`;
+      btn.style.top = `${randomY}px`;
+    }
+  
+    function centerButton() {
+      const centerX = (window.innerWidth - btn.offsetWidth) / 2;
+      const centerY = (window.innerHeight - btn.offsetHeight) / 2;
+  
+      btn.style.left = `${centerX}px`;
+      btn.style.top = `${centerY}px`;
+    }
+  
+    window.onload = centerButton;
+    window.onresize = centerButton;
+  </script>
+    
+</body>
+</html>

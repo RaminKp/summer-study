@@ -1,0 +1,93 @@
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Scramble Word Game</title>
+  <link rel="stylesheet" type="text/css" href="{% static 'game/gamestyle.css' %}">
+  <script>
+    // Global logging function
+    function logEvent(screen, event) {
+      fetch('/log-event/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+          screen: screen,
+          player: "{{ player_name }}",
+          event: event
+        })
+      })
+      .then(response => {
+        if (!response.ok) {
+          console.error("Logging failed", response.statusText);
+        }
+      })
+      .catch(error => console.error("Error logging event:", error));
+    }
+    let timeLeft = 60;
+    let timer;
+    let currentAudio = null; // Global audio variable
+    function startTimer() {
+      timer = setInterval(() => {
+        document.getElementById("timer").innerText = `Time left: ${timeLeft} sec`;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          document.getElementById("guess-input").value = "";
+          document.getElementById("game-form").submit();
+        }
+        timeLeft--;
+      }, 1000);
+    }
+    function playTTS(message) {
+      const ttsUrl = `/tts/?text=${encodeURIComponent(message)}`;
+      console.log("TTS URL:", ttsUrl);
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(ttsUrl);
+      currentAudio.muted = true;
+      currentAudio.play().then(() => {
+          currentAudio.muted = false;
+      }).catch(err => console.error("Audio play error:", err));
+    }
+    function handleHintRequest() {
+      logEvent('Game Screen', 'Hint Requested');
+      var hintText = document.getElementById('description').innerText.replace('Hint: ', '');
+      playTTS(hintText);
+    }
+    window.onload = function() {
+      startTimer();
+      {% if attempts_left == 10 %}
+        playTTS("Let's try the first word.");
+      {% else %}
+        if (Math.random() < 0.5) {
+          const hintText = document.getElementById('description').innerText.replace('Hint: ', '');
+          playTTS(hintText);
+        }
+      {% endif %}
+    }
+  </script>
+</head>
+<body>
+  <div class="center-container">
+    <h2>Player: {{ player_name }}</h2>
+    <h1>Unscramble The Word</h1>
+    <h1 id="scrambled-word">{{ scrambled }}</h1>
+    <h3 id="timer">Time left: 60 sec</h3>
+    <h3 id="attempts">Attempts left: {{ attempts_left }}</h3>
+    <form id="game-form" method="post">
+      {% csrf_token %}
+      <input id="guess-input" type="text" name="guess" placeholder="Your guess" required>
+      <button type="submit" onclick="logEvent('Game Screen', 'Submit Guess Clicked');">Submit</button>
+      <h3 id="description">Hint: {{ description }}</h3>
+    </form>
+    <!-- Speaker button for manual playback -->
+    <button type="button" onclick="handleHintRequest()" title="Read Hint" style="font-size: 2rem;">🔊</button>
+  </div>
+  <!-- Exit button fixed at the bottom center -->
+  <a id="exit-button" href="{% url 'select_difficulty' %}" onclick="logEvent('Game Screen', 'Exit Clicked');">Exit</a>
+</body>
+</html>

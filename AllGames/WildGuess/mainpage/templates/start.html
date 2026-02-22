@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WildGuess</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Parkinsans&family=Spicy+Rice&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/start.css' %}">
+  <script type="text/javascript" src="{% static 'javaScript/start.js' %}">
+  </script>
+</head>
+<body>
+
+<div class="container">
+  <h1 class="title">WildGuess</h1>
+  <p>Get ready for a fun and educational adventure into the world of wildlife! In this game, you'll learn fascinating facts about animals from around the world.</p>  
+  <p><strong>Here's how it works:</strong></p>  
+  <ul>
+    <li>You'll be given some key details about an animal.</li>  
+    <li>Based on these clues, you must guess the correct animal.</li>  
+    <li>Then, select 6 traits that best describe it.</li>  
+  </ul>  
+  <p>At the end of each game, you'll receive a score out of 6 based on your choices.</p>  
+  <p>Think you know your animals? Let's find out! 🦁🐧🐍</p>  
+  <form action="" method="POST">
+    {% csrf_token %}
+    <label for="player1" class="playerLabel Player1label">Player Name: </label>
+    <input type="text" name="player1" class="playerName player1name" id="player1name" required>
+    <br>
+    <button id="startBtn" class="startBtn" type="submit" name="Start">Start</button>
+  </form>
+</div>
+
+</body>
+</html>

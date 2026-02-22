@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WildGuess</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Parkinsans&family=Spicy+Rice&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <script type="text/javascript" src="{% static 'javaScript/wolf.js' %}">
+  </script>
+</head>
+
+
+<body>
+  <a href="{% url 'start' %}"><img class="backBtn" src="{% static 'images/backbutton.png' %}" alt=""></a>
+
+<div class="container">
+
+  <div class="traitBox" id="traitBox">
+    <h1>Traits</h1>
+    <!--TraitBoxInput's added by javascript-->
+  </div>
+
+  <!-- This is where we put the animal's image -->
+  <div class="animalImage">
+    <h1 class="playerTitle playerOneTitle">Welcome, {{ player1 }}.</h1>
+    <img class="backgroundAnimal" src="{% static 'images/crocodile.png' %}" alt="">
+    <img class="backgroundAnimal" src="{% static 'images/lion.png' %}" alt="">
+    <img class="backgroundAnimal" src="{% static 'images/turtle.png' %}" alt="">
+    <img class="backgroundAnimal" src="{% static 'images/tiger.png' %}" alt="">
+    <img class="backgroundAnimal" src="{% static 'images/wolf.png' %}" alt="">
+    <img id="penguinImg" class="img penguinImg" src="{% static 'images/wolf.png' %}" alt="wolf">
+    <p id="hoverText" class="hoverText">Wolves are highly social animals known for their strong pack structure and complex social behaviors. They have keen senses, particularly their sense of smell, which allows them to track prey over long distances. Wolves communicate through a range of vocalizations, body language, and scent marking, maintaining cohesion within the pack. They are adaptable hunters, often working together to bring down larger prey, which strengthens their social bonds and provides food for the entire group. With a varied diet that includes ungulates and small mammals, wolves play a crucial role in maintaining the balance of their ecosystems. Their thick fur keeps them warm in cold environments, making them well-suited for diverse habitats.</p>
+    <img id="questionImg" class="img questionImg" src="{% static 'images/question.png' %}" alt="question">
+    <br>
+    <p id="scoreMessage" class="scoreMessage"></p>
+    <button id="submitBtn" class="btn submitBtn" type="submit">Submit</button>
+    <br>
+    <button id="nextBtn" class="btn nextBtn" type="submit">
+      <a class="href" href="{% url 'ant' %}">Next Game</a>
+    </button>
+  </div>
+
+  <!-- This is where we put Specifications -->
+  <div class="specsBox">
+    <h1>Specifications</h1>
+    <p class="specsBoxText">I am social</p>
+    <br>
+    <p class="specsBoxText">I live in a cold northern climate</p>
+    <br>
+    <p class="specsBoxText">I am a predator but I also scavenge</p>
+    <br>
+    <p class="specsBoxText">I hunt large prey</p>
+    <br>
+    <p class="specsBoxText">I am a carnivore</p>
+    <br>
+  </div>
+</div>
+
+<script>
+  onPageLoad();
+</script>
+
+</body>
+</html>

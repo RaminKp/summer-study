@@ -1,0 +1,36 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "learn_multiplication/wsgi.py",
+      "use": "@vercel/python",
+      "config": { "maxLambdaSize": "15mb", "runtime": "python3.12.5" }
+    },
+    {
+      "src": "staticfiles/**/*",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "frontend/build/**/*",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/staticfiles/$1"
+    },
+    {
+      "src": "/icons/(.*)",
+      "dest": "/frontend/build/icons/$1"
+    },
+    {
+      "src": "/sounds/(.*)",
+      "dest": "/frontend/build/sounds/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "learn_multiplication/wsgi.py"
+    }
+  ]
+}

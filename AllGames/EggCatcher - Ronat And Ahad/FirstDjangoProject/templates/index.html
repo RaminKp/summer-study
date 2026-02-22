@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Egg Catcher Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Bangers&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+                url("{% static 'images/ye.webp' %}") no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            padding: 20px;
+        }
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            z-index: 0;
+        }
+        /* Falling Eggs Animation */
+        .falling-eggs {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .falling-eggs div {
+            position: absolute;
+            top: -60px;
+            animation: fall linear infinite;
+            font-size: 50px;
+            color: #fff;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
+        }
+        .falling-eggs div:nth-child(1) { left: 5%;  animation-duration: 9s;  animation-delay: 0s; }
+        .falling-eggs div:nth-child(2) { left: 15%; animation-duration: 10s; animation-delay: 1s; }
+        .falling-eggs div:nth-child(3) { left: 25%; animation-duration: 8s;  animation-delay: 0.5s; }
+        .falling-eggs div:nth-child(4) { left: 35%; animation-duration: 11s; animation-delay: 1.5s; }
+        .falling-eggs div:nth-child(5) { left: 45%; animation-duration: 9s;  animation-delay: 0.3s; }
+        .falling-eggs div:nth-child(6) { left: 55%; animation-duration: 10s; animation-delay: 0.8s; }
+        .falling-eggs div:nth-child(7) { left: 65%; animation-duration: 12s; animation-delay: 1s; }
+        .falling-eggs div:nth-child(8) { left: 75%; animation-duration: 8s;  animation-delay: 0.6s; }
+        .falling-eggs div:nth-child(9) { left: 85%; animation-duration: 10s; animation-delay: 1.2s; }
+        .falling-eggs div:nth-child(10){ left: 95%; animation-duration: 9s;  animation-delay: 0.7s; }
+        @keyframes fall {
+            0% { transform: translateY(-50px); opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(110vh); opacity: 0; }
+        }
+        .frying-pan {
+            position: absolute;
+            top: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 140px;
+            animation: pan-bounce 1.2s infinite alternate;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
+            z-index: 2;
+        }
+        @keyframes pan-bounce {
+            0% { transform: translateY(0) translateX(-50%); }
+            100% { transform: translateY(-10px) translateX(-50%); }
+        }
+        .welcome-message {
+            position: relative;
+            z-index: 3;
+            background: rgba(0,0,0,0.6);
+            padding: 60px 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+            animation: fadeIn 1s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 {
+            font-family: 'Chewy', cursive;
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #ffea00;
+            text-shadow: 3px 3px 8px rgba(0,0,0,0.9);
+        }
+        p.subtitle {
+            font-family: 'Bangers', cursive;
+            font-size: 1.5em;
+            margin-bottom: 35px;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+        }
+        .cta-btn {
+            background: linear-gradient(45deg, #fff9c4, #fffde7);
+            color: #333;
+            font-family: 'Chewy', cursive;
+            font-size: 1.2em;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin: 10px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .cta-btn:hover {
+            transform: scale(1.1) rotate(2deg);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+        .cta-btn:active {
+            transform: scale(1);
+        }
+        .button-container {
+            margin-top: 20px;
+        }
+        .rules-container {
+            margin-top: 20px;
+        }
+        .rules-panel {
+            display: none;
+            position: fixed;
+            top: 10%;
+            right: 10%;
+            width: 350px;
+            max-height: 80vh;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            overflow-y: auto;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+            z-index: 10;
+            text-align: left;
+        }
+        .rules-container:hover .rules-panel {
+            display: block;
+        }
+        .rules-panel h1 {
+            font-family: 'Chewy', cursive;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: #ffea00;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
+        }
+        .rules-panel h2 {
+            font-family: 'Bangers', cursive;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        .rules-panel p,
+        .rules-panel li {
+            font-family: 'Bangers', cursive;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        .rules-panel ul {
+            list-style: disc;
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay"></div>
+    <!-- Falling Eggs Animation -->
+    <div class="falling-eggs">
+        <div>🥚</div>
+        <div>🥚</div>
+        <div>🥚</div>
+        <div>🥚</div>
+        <div>🥚</div>
+        <div>🥚</div>
+        <div>🥚</div>
+        <div>🥚</div>
+        <div>🥚</div>
+        <div>🥚</div>
+    </div>
+    <!-- Frying Pan Icon -->
+    <div class="frying-pan">🍳</div>
+    <!-- Welcome Message & Modes -->
+    <div class="welcome-message">
+        <h1>Egg Catcher</h1>
+        <p class="subtitle">Choose a fun mode and catch the eggs!</p>
+        <div class="button-container">
+            <a href="/play" class="cta-btn mode-btn" id="reflexBtn">Reflex</a>
+            <a href="/math" class="cta-btn mode-btn" id="mathBtn">Math</a>
+            <a href="/word" class="cta-btn mode-btn" id="wordBtn">Word</a>
+            <div class="rules-container">
+                <button class="cta-btn" id="rulesBtn">Rules</button>
+                <div class="rules-panel">
+                    <h1>How to Play</h1>
+                    <p>Welcome to Egg Catcher! Here's how to play:</p>
+                    <ul>
+                        <li>Use the arrow keys on your keyboard to move the pan left and right</li>
+                        <li>Choose from three awesome game modes:</li>
+                        <li>Reflex Mode: Be super quick to catch falling eggs!</li>
+                        <li>Math Mode: Solve cute little math puzzles by catching the egg with the right answer!</li>
+                        <li>Word Mode: Catch letters to build a fun word!</li>
+                        <li>Earn points for every egg you catch</li>
+                        <li>Avoid missing eggs to keep your score high</li>
+                        <li>Have lots of fun and beat your high score!</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Voice Synthesis function with kid-friendly settings
+        function speakMessage(message) {
+            window.speechSynthesis.cancel();
+            var utterance = new SpeechSynthesisUtterance(message);
+            utterance.pitch = 1.2;
+            utterance.rate = 0.9;
+            var voices = window.speechSynthesis.getVoices();
+            if (voices.length > 0) {
+                var selectedVoice = voices.find(v => v.name.toLowerCase().includes("english"));
+                if(selectedVoice){
+                    utterance.voice = selectedVoice;
+                }
+            }
+            window.speechSynthesis.speak(utterance);
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Greet the user on page load
+            speakMessage("Which fun game would you like to play?");
+
+            // Set up hover events for mode buttons
+            var reflexBtn = document.getElementById("reflexBtn");
+            var mathBtn = document.getElementById("mathBtn");
+            var wordBtn = document.getElementById("wordBtn");
+
+            reflexBtn.addEventListener("mouseover", function() {
+                speakMessage("In Reflex Mode, use your speedy fingers to catch the falling eggs!");
+            });
+            mathBtn.addEventListener("mouseover", function() {
+                speakMessage("In Math Mode, solve easy math puzzles by catching the egg with the right answer!");
+            });
+            wordBtn.addEventListener("mouseover", function() {
+                speakMessage("In Word Mode, catch the letters to form a word. Have fun building words!");
+            });
+
+            // When the Rules button is clicked, speak the rules aloud.
+            var rulesBtn = document.getElementById("rulesBtn");
+            rulesBtn.addEventListener("click", function() {
+                var rulesText = document.querySelector(".rules-panel").innerText;
+                speakMessage(rulesText);
+            });
+        });
+    </script>
+<script>
+    window.watsonAssistantChatOptions = {
+      integrationID: "ed072c3e-09ff-4a49-be11-38ecb973ed5a", // The ID of this integration.
+      region: "us-south", // The region your integration is hosted in.
+      serviceInstanceID: "2c740edd-16b2-4c8e-91da-0eaef399ada0", // The ID of your service instance.
+      onLoad: async (instance) => { await instance.render(); }
+    };
+    setTimeout(function(){
+      const t=document.createElement('script');
+      t.src="https://web-chat.global.assistant.watson.appdomain.cloud/versions/" + (window.watsonAssistantChatOptions.clientVersion || 'latest') + "/WatsonAssistantChatEntry.js";
+      document.head.appendChild(t);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Your Score - First Aid Heroes</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #ff3e3e;
+    }
+    .score {
+      background: #ff6464;
+      color: white;
+      margin: 10px auto;
+      padding: 10px;
+      border-radius: 10px;
+      width: 80%;
+      max-width: 600px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Your Latest Score</h1>
+  {% if score %}
+    <div class="score">
+      {{ score.player.name }} - {{ score.level }}: {{ score.score }} <br>
+      <small>{{ score.created|date:"SHORT_DATETIME_FORMAT" }}</small>
+    </div>
+  {% else %}
+    <p>No score recorded yet.</p>
+  {% endif %}
+  <a href="{% url 'play' %}" id="backToGame">Back to Game</a>
+
+  <!-- CSRF Token and Logging Setup -->
+  {% csrf_token %}
+  <script>
+    const csrfToken = '{{ csrf_token }}';
+
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + "=")) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+    // Global logging function
+    function logData(dataObj) {
+      const timestamp = new Date().toISOString();
+      const logEntry = {
+        timestamp: timestamp,
+        page: dataObj.page || "Your Score Page",
+        player: localStorage.getItem("playerName") || "Guest",
+        event: dataObj.event || ""
+      };
+      console.log("Logging event:", logEntry);
+      fetch("/log_event/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken")
+        },
+        body: JSON.stringify(logEntry)
+      }).catch(err => console.error("Error logging event:", err));
+    }
+
+    // Log the page load event
+    document.addEventListener("DOMContentLoaded", () => {
+      logData({ page: "Your Score Page", event: "Page Loaded" });
+    });
+
+    // Log back button click
+    document.getElementById("backToGame").addEventListener("click", () => {
+      logData({ page: "Your Score Page", event: "Back to Game button clicked" });
+    });
+  </script>
+</body>
+</html>

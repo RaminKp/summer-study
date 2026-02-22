@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Log Debug Page</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <style>
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: 8px; }
+    th { background-color: #f2f2f2; }
+  </style>
+</head>
+<body>
+  <h1>Log Debug Page</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Timestamp</th>
+        <th>Page</th>
+        <th>Player</th>
+        <th>Event</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for log in logs %}
+      <tr>
+        <td>{{ log.timestamp }}</td>
+        <td>{{ log.page }}</td>
+        <td>{{ log.player }}</td>
+        <td>{{ log.event }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="4">No logs found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

@@ -1,0 +1,59 @@
+{% load static %}
+<html lang="en">
+<head>
+    <title>Game Over - Scramble Word Game</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'game/gamestyle.css' %}">
+    <script>
+      function logEvent(screen, event) {
+        fetch('/log-event/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+          },
+          body: JSON.stringify({
+            screen: screen,
+            player: "{{ player_name }}",
+            event: event
+          })
+        })
+        .then(response => {
+          if (!response.ok) {
+            console.error("Logging failed", response.statusText);
+          }
+        })
+        .catch(error => console.error("Error logging event:", error));
+      }
+      function playGameOverMessage() {
+          let correctCount = "{{ correct_count|default:'0' }}";
+          let wrongCount = "{{ wrong_count|default:'0' }}";
+          let message = "";
+          if (Number(correctCount) === 10) {
+              message = "Outstanding! You got all answers correct. Fantastic job, you're a true champion!";
+          } else {
+              message = "Game over! You've used all your attempts. You made " + correctCount + " correct answers and " + wrongCount + " wrong answers. Remember, every mistake is a step toward success. Keep learning, and you'll get even better!";
+          }
+          const ttsUrl = `/tts/?text=${encodeURIComponent(message)}`;
+          const audio = new Audio(ttsUrl);
+          audio.muted = true;
+          audio.play().then(() => {
+              audio.muted = false;
+          }).catch(err => console.error("Audio play error:", err));
+      }
+      window.onload = function() {
+          playGameOverMessage();
+      }
+    </script>
+</head>
+<body>
+    <div class="center-container">
+        <h1>Game Over!</h1>
+        <h2>Your last answer: {{ user_guess }}</h2>
+        <h2>Correct Word: {{ correct_word }}</h2>
+        <h2>Correct Answers: {{ correct_count }}</h2>
+        <h2>Wrong Answers: {{ wrong_count }}</h2>
+        <p id="game_state" style="display:none;">{{ game_state }}</p>
+        <a href="{% url 'select_difficulty' %}" onclick="logEvent('Easy Game Over', 'Back to Menu Clicked');">Back to Menu</a>
+    </div>
+</body>
+</html>

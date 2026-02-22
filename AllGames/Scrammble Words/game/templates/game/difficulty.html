@@ -1,0 +1,57 @@
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Scramble Word Game - Difficulty</title>
+  <link rel="stylesheet" type="text/css" href="{% static 'game/style.css' %}">
+  <script>
+    // Global logging function
+    function logEvent(screen, event) {
+      fetch('/log-event/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+          screen: screen,
+          player: "{{ player_name }}",
+          event: event
+        })
+      })
+      .then(response => {
+        if (!response.ok) {
+          console.error("Logging failed", response.statusText);
+        }
+      })
+      .catch(error => console.error("Error logging event:", error));
+    }
+    let currentAudio = null;
+    function playTTS(message) {
+      const ttsUrl = `/tts/?text=${encodeURIComponent(message)}`;
+      console.log("TTS URL:", ttsUrl);
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(ttsUrl);
+      currentAudio.muted = true;
+      currentAudio.play().then(() => {
+        currentAudio.muted = false;
+      }).catch(err => console.error("Audio play error:", err));
+    }
+    window.onload = function() {
+      playTTS("Please select your difficulty level: Easy for 8 year olds, Medium for 9 year olds, or Hard for 10 year olds.");
+    };
+  </script>
+</head>
+<body>
+  <div class="center-container">
+    <h1>Choose an Option</h1>
+    <a href="{% url 'easy_game' %}" class="menu-button" onclick="logEvent('Difficulty Page', 'Easy Selected');">Easy (8 Years Old)</a>
+    <a href="{% url 'medium_game' %}" class="menu-button" onclick="logEvent('Difficulty Page', 'Medium Selected');">Medium (9 Years Old)</a>
+    <a href="{% url 'hard_game' %}" class="menu_button" onclick="logEvent('Difficulty Page', 'Hard Selected');">Hard (10 Years Old)</a>
+    <a href="{% url 'options' %}" class="menu_button back-button" onclick="logEvent('Difficulty Page', 'Back Clicked');">Back</a>
+  </div>
+</body>
+</html>

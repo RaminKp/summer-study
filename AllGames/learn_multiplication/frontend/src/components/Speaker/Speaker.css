@@ -1,0 +1,8 @@
+.Speaker img {
+    width: 25px;
+    height: 25px;
+    top: 16px;
+    right: 16px;
+    position: absolute;
+    cursor: pointer;
+}

@@ -1,0 +1,383 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Egg Catcher Game - Word Mode</title>
+  <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Bangers&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
+                  url("{% static 'images/ye.webp' %}") no-repeat center center fixed;
+      background-size: cover;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .back-btn {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(45deg, #fff9c4, #fffde7);
+      color: #333;
+      padding: 12px 24px;
+      text-decoration: none;
+      border-radius: 50px;
+      font-family: 'Chewy', cursive;
+      font-size: 1.2em;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      z-index: 100;
+    }
+
+    .back-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .score {
+      position: absolute;
+      top: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 28px;
+      color: #fff;
+      text-shadow: 2px 2px 4px #000;
+      font-family: 'Bangers', cursive;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 10px 20px;
+      border-radius: 20px;
+      z-index: 50;
+    }
+
+    .target-word {
+      position: absolute;
+      top: 0px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 36px;
+      color: white;
+      text-shadow: 2px 2px 6px #000;
+      font-family: 'Bangers', cursive;
+      z-index: 20;
+    }
+
+    #gameCanvas {
+      display: block;
+      margin: 130px auto 0;
+      border: 2px solid #333;
+      background-color: rgba(0, 0, 0, 0.6);
+    }
+
+    .result-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-family: 'Chewy', cursive;
+      z-index: 30;
+    }
+
+    .result-overlay h1 {
+      font-size: 3em;
+      margin-bottom: 20px;
+      color: #ffea00;
+      text-shadow: 2px 2px 8px #000;
+    }
+
+    .result-overlay p {
+      font-size: 1.5em;
+      margin: 10px 0;
+    }
+
+    .result-overlay .button-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .result-overlay .btn {
+      background: linear-gradient(45deg, #fff9c4, #fffde7);
+      color: #333;
+      padding: 15px 30px;
+      margin: 10px;
+      text-decoration: none;
+      border-radius: 50px;
+      font-family: 'Chewy', cursive;
+      font-size: 1.2em;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+      border: none;
+    }
+
+    .result-overlay .btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <a href="/" class="back-btn">Back</a>
+
+  <div class="score">
+    Time: <span id="timer">60</span>s | Score: <span id="score">0</span> | Wrong: <span id="wrongCount">0</span>
+  </div>
+
+  <div class="target-word" id="targetWord">?</div>
+
+  <canvas id="gameCanvas" width="400" height="600"></canvas>
+
+  <div class="result-overlay" id="resultOverlay">
+    <h1>Time's Up!</h1>
+    <p>Score: <span id="finalScore"></span></p>
+    <p>Wrong: <span id="finalWrong"></span></p>
+    <div class="button-container">
+      <button class="btn" onclick="restartGame()">Restart</button>
+      <a href="/" class="btn">Back</a>
+    </div>
+  </div>
+
+  <script>
+    function speakMessage(message) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(message);
+      utterance.pitch = 1.2;
+      utterance.rate = 0.9;
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        const selectedVoice = voices.find(v => v.name.toLowerCase().includes("english"));
+        if (selectedVoice) utterance.voice = selectedVoice;
+      }
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function speakLetterFeedback(correct) {
+      const good = ["Nice catch!", "Well done!", "Correct letter!", "Great job!", "You got it!"];
+      const bad = ["Oops, wrong letter!", "Not quite.", "Try again!", "That wasn't it."];
+      speakMessage(correct ? good[Math.floor(Math.random() * good.length)] : bad[Math.floor(Math.random() * bad.length)]);
+    }
+
+    function speakWordComplete() {
+      const praise = ["Awesome! You completed the word!", "Great spelling!", "Word done! You're on fire!"];
+      speakMessage(praise[Math.floor(Math.random() * praise.length)]);
+    }
+
+    function playBeep() {
+      new Audio("{% static 'sounds/beep.mp3' %}").play();
+    }
+
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const targetWordElement = document.getElementById("targetWord");
+    const timerElement = document.getElementById("timer");
+    const scoreElement = document.getElementById("score");
+    const wrongCountElement = document.getElementById("wrongCount");
+    const resultOverlay = document.getElementById("resultOverlay");
+    const finalScoreElement = document.getElementById("finalScore");
+    const finalWrongElement = document.getElementById("finalWrong");
+
+    const words = ["APPLE", "GRAPE", "LEMON", "PEACH", "MANGO", "BIRD", "FISH", "TREE", "BALL", "GOAT", "CAT", "DUCK", "DOOR"];
+    let timeLeft = 60;
+    let gameRunning = true;
+    let timerInterval;
+    let score = 0;
+    let wrongAnswers = 0;
+    let targetWord = "";
+    let currentLetterIndex = 0;
+    let eggs = [];
+
+    const basketWidth = 100;
+    const basketHeight = 60;
+    let basketX = (canvas.width - basketWidth) / 2;
+    const basketSpeed = 7;
+    const eggRadius = 20;
+
+    let rightPressed = false;
+    let leftPressed = false;
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "Right" || e.key === "ArrowRight") rightPressed = true;
+      if (e.key === "Left" || e.key === "ArrowLeft") leftPressed = true;
+    });
+
+    document.addEventListener("keyup", e => {
+      if (e.key === "Right" || e.key === "ArrowRight") rightPressed = false;
+      if (e.key === "Left" || e.key === "ArrowLeft") leftPressed = false;
+    });
+
+    function updateTargetWordDisplay() {
+      let html = "";
+      for (let i = 0; i < targetWord.length; i++) {
+        html += `<span style='color: ${i < currentLetterIndex ? "yellow" : "white"};'>${targetWord[i]}</span>`;
+      }
+      targetWordElement.innerHTML = html;
+    }
+
+    function generateWord() {
+      let newWord;
+      do { newWord = words[Math.floor(Math.random() * words.length)]; } while (newWord === targetWord);
+      targetWord = newWord;
+      currentLetterIndex = 0;
+      updateTargetWordDisplay();
+    }
+
+    function spawnEggs() {
+      eggs = [];
+      const correctLetter = targetWord[currentLetterIndex];
+      const correctEggX = Math.floor(Math.random() * (canvas.width - 2 * eggRadius)) + eggRadius;
+      eggs.push({ x: correctEggX, y: -eggRadius, speed: Math.random() * 1.0 + 1.0, letter: correctLetter, isCorrect: true });
+      for (let i = 0; i < 5; i++) {
+        let wrong;
+        do { wrong = String.fromCharCode(65 + Math.floor(Math.random() * 26)); } while (wrong === correctLetter);
+        let x;
+        do { x = Math.floor(Math.random() * (canvas.width - 2 * eggRadius)) + eggRadius; } while (Math.abs(x - correctEggX) < 50);
+        eggs.push({ x, y: -eggRadius, speed: Math.random() * 1.0 + 1.0, letter: wrong, isCorrect: false });
+      }
+    }
+
+    function updateGame() {
+      if (rightPressed && basketX < canvas.width - basketWidth) basketX += basketSpeed;
+      if (leftPressed && basketX > 0) basketX -= basketSpeed;
+
+      for (let i = eggs.length - 1; i >= 0; i--) {
+        const egg = eggs[i];
+        egg.y += egg.speed;
+
+        if (
+          egg.y + eggRadius > canvas.height - basketHeight &&
+          egg.y - eggRadius < canvas.height &&
+          egg.x > basketX && egg.x < basketX + basketWidth
+        ) {
+          if (egg.isCorrect) {
+            currentLetterIndex++;
+            updateTargetWordDisplay();
+            speakLetterFeedback(true);
+            if (currentLetterIndex >= targetWord.length) {
+              score++;
+              scoreElement.innerText = score;
+              speakWordComplete();
+              generateWord();
+            }
+            spawnEggs();
+          } else {
+            wrongAnswers++;
+            wrongCountElement.innerText = wrongAnswers;
+            speakLetterFeedback(false);
+            generateWord();
+            spawnEggs();
+          }
+          break;
+        }
+
+        if (egg.y - eggRadius > canvas.height) {
+          if (egg.isCorrect) {
+            wrongAnswers++;
+            wrongCountElement.innerText = wrongAnswers;
+            speakLetterFeedback(false);
+            generateWord();
+            spawnEggs();
+            break;
+          } else {
+            eggs.splice(i, 1);
+          }
+        }
+      }
+    }
+
+    function drawBasket() {
+      ctx.save();
+      ctx.font = "60px Chewy, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("🛒", basketX + basketWidth / 2, canvas.height - basketHeight / 2);
+      ctx.restore();
+    }
+
+    function drawEggs() {
+      for (let egg of eggs) {
+        ctx.font = "40px Chewy, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "#fff";
+        ctx.fillText("🥚", egg.x, egg.y);
+        ctx.font = "20px Roboto, sans-serif";
+        ctx.fillStyle = "#000";
+        ctx.fillText(egg.letter, egg.x, egg.y);
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBasket();
+      drawEggs();
+    }
+
+    function gameLoop() {
+      if (!gameRunning) return;
+      updateGame();
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    function updateTimer() {
+      timeLeft--;
+      timerElement.innerText = timeLeft;
+      if (timeLeft === 10) speakMessage("You got only 10 seconds left!");
+      if (timeLeft <= 6 && timeLeft > 0) {
+        speakMessage(timeLeft.toString());
+        playBeep();
+      }
+      if (timeLeft <= 0) {
+        gameRunning = false;
+        clearInterval(timerInterval);
+        showResults();
+      }
+    }
+
+    function showResults() {
+      finalScoreElement.innerText = score;
+      finalWrongElement.innerText = wrongAnswers;
+      resultOverlay.style.display = "flex";
+      const msg = score >= 5 ? "Awesome job with the words!" :
+                   score > 0 ? "Good effort!" : "Better luck next time!";
+      speakMessage(`Time's up! You completed ${score} word${score !== 1 ? 's' : ''} and had ${wrongAnswers} wrong answers. ${msg}`);
+    }
+
+    function restartGame() {
+      eggs = [];
+      score = 0;
+      wrongAnswers = 0;
+      timeLeft = 60;
+      gameRunning = true;
+      basketX = (canvas.width - basketWidth) / 2;
+      scoreElement.innerText = score;
+      wrongCountElement.innerText = wrongAnswers;
+      timerElement.innerText = timeLeft;
+      generateWord();
+      spawnEggs();
+      resultOverlay.style.display = "none";
+      clearInterval(timerInterval);
+      timerInterval = setInterval(updateTimer, 1000);
+      gameLoop();
+    }
+
+    generateWord();
+    spawnEggs();
+    timerInterval = setInterval(updateTimer, 1000);
+    gameLoop();
+  </script>
+</body>
+</html>

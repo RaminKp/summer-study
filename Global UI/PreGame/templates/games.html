@@ -1,0 +1,243 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Games</title>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300&family=Poppins:wght@300&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background-color: #fffed4;
+      font-family: 'Poppins', sans-serif;
+      color: black;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 15px 40px;
+    }
+
+    /* Back Button */
+    .back-button {
+      align-self: flex-start;
+      cursor: pointer;
+    }
+
+    .back-button-img {
+      width: 70px;
+    }
+
+
+
+    /* Grid container */
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 35px;
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    /* game Card */
+    .game-card {
+      background-color:rgba(255, 255, 255, 0);
+      border: 2px solid black;
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .game-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 25px #D94645;
+    }
+
+    /* Screenshot image */
+    .game-img {
+      width: 100%;
+      object-fit: cover;
+      height: 160px;
+      border-bottom: 2px solid black;
+      user-select: none;
+    }
+
+    /* Card content */
+    .game-content {
+      padding: 15px 20px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .game-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0 0 10px;
+      color: #D94645;
+    }
+
+    .game-description {
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 1.4;
+      margin-bottom: 18px;
+      flex-grow: 1;
+    }
+
+    /* Play button */
+
+    .play-button button{
+      align-self: flex-start;
+      background-color: #D94645;
+      border: none;
+      padding: 10px 22px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      text-decoration: none;
+      user-select: none;
+    }
+
+    .play-button button:hover{
+      background-color: #b43a3a;
+    }
+
+    /* Responsive text scaling */
+    @media (max-width: 512px) {
+      .game-title {
+        font-size: 18px;
+      }
+      .game-description {
+        font-size: 13px;
+      }
+      .play-button {
+        padding: 9px 18px;
+        font-size: 13px;
+      }
+      .back-button {
+        font-size: 14px;
+        padding: 8px 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <a href="{% url "start_page" %}" class="back-button"><img src="{% static "images/changeBlack.png" %}" class="back-button-img" alt=""></a>
+
+  <main class="games-grid" role="main" aria-label="Game games list">
+
+    <article class="game-card" tabindex="0">
+      <img src="{% static "images/test.png" %}" class="game-img"/>
+      <div class="game-content">
+        <h2 class="game-title">Tip Calculator</h2>
+        <p class="game-description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia sed diam nec pellentesque. Nullam in vulputate tellus. Ut scelerisque fringilla elit at ultricies.</p>
+        <form method="post" action="{% url 'play_game' 'game_one' %}" class="play-button">
+          {% csrf_token %}
+          <button type="submit">Play</button>
+        </form>
+      </div>
+    </article>
+
+    <article class="game-card" tabindex="0">
+      <img src="{% static "images/test.png" %}" class="game-img"/>
+      <div class="game-content">
+        <h2 class="game-title">Space Tourism</h2>
+        <p class="game-description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia sed diam nec pellentesque. Nullam in vulputate tellus. Ut scelerisque fringilla elit at ultricies.</p>
+        <form method="post" action="{% url 'play_game' 'game_two' %}" class="play-button">
+          {% csrf_token %}
+          <button type="submit">Play</button>
+        </form>
+      </div>
+    </article>
+
+    <article class="game-card" tabindex="0">
+      <img src="{% static "images/test.png" %}" class="game-img"/>
+      <div class="game-content">
+        <h2 class="game-title">Rating System</h2>
+        <p class="game-description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia sed diam nec pellentesque. Nullam in vulputate tellus. Ut scelerisque fringilla elit at ultricies.</p>
+        <form method="post" action="{% url 'play_game' 'game_three' %}" class="play-button">
+          {% csrf_token %}
+          <button type="submit">Play</button>
+        </form>
+      </div>
+    </article>
+
+    <article class="game-card" tabindex="0">
+      <img src="{% static "images/test.png" %}" class="game-img"/>
+      <div class="game-content">
+        <h2 class="game-title">FAQ Design</h2>
+        <p class="game-description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia sed diam nec pellentesque. Nullam in vulputate tellus. Ut scelerisque fringilla elit at ultricies.</p>
+        <form method="post" action="{% url 'play_game' 'game_four' %}" class="play-button">
+          {% csrf_token %}
+          <button type="submit">Play</button>
+        </form>
+      </div>
+    </article>
+
+    <article class="game-card" tabindex="0">
+      <img src="{% static "images/test.png" %}" class="game-img"/>
+      <div class="game-content">
+        <h2 class="game-title">Web Generation Website</h2>
+        <p class="game-description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia sed diam nec pellentesque. Nullam in vulputate tellus. Ut scelerisque fringilla elit at ultricies.</p>
+        <form method="post" action="{% url 'play_game' 'game_five' %}" class="play-button">
+          {% csrf_token %}
+          <button type="submit">Play</button>
+        </form>
+      </div>
+    </article>
+
+    <article class="game-card" tabindex="0">
+      <img src="{% static "images/test.png" %}" class="game-img"/>
+      <div class="game-content">
+        <h2 class="game-title">Drum Kit Simulator</h2>
+        <p class="game-description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia sed diam nec pellentesque. Nullam in vulputate tellus. Ut scelerisque fringilla elit at ultricies.</p>
+        <form method="post" action="{% url 'play_game' 'game_six' %}" class="play-button">
+          {% csrf_token %}
+          <button type="submit">Play</button>
+        </form>
+      </div>
+    </article>
+
+    <article class="game-card" tabindex="0">
+      <img src="{% static "images/test.png" %}" class="game-img"/>
+      <div class="game-content">
+        <h2 class="game-title">TinDog Website Remake</h2>
+        <p class="game-description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia sed diam nec pellentesque. Nullam in vulputate tellus. Ut scelerisque fringilla elit at ultricies.</p>
+        <form method="post" action="{% url 'play_game' 'game_seven' %}" class="play-button">
+          {% csrf_token %}
+          <button type="submit">Play</button>
+        </form>
+      </div>
+    </article>
+
+    <article class="game-card" tabindex="0">
+      <img src="{% static "images/test.png" %}" class="game-img"/>
+      <div class="game-content">
+        <h2 class="game-title">Dice Game</h2>
+        <p class="game-description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia sed diam nec pellentesque. Nullam in vulputate tellus. Ut scelerisque fringilla elit at ultricies.</p>
+        <form method="post" action="{% url 'play_game' 'game_eight' %}" class="play-button">
+          {% csrf_token %}
+          <button type="submit">Play</button>
+        </form>
+      </div>
+    </article>
+
+  </main>
+
+</body>
+
+</html>

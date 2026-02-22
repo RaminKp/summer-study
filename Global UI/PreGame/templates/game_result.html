@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Game Played</title>
+</head>
+<body>
+    <h1>You played {{ game_name }}!</h1>
+    <p>Total times you played this game: {{ count }}</p>
+    <a href="{% url 'games_page' %}">← Back to Games</a>
+</body>
+</html>

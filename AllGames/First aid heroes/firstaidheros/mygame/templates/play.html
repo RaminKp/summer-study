@@ -1,0 +1,236 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Play - First Aid Heroes</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <style>
+    /* Full-screen background image for the Play page */
+    .cover-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      background: url("{% static 'images/Playcover.jpg' %}") no-repeat center center;
+      background-size: cover;
+    }
+    /* Basic container and button styling */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Comic Sans MS", cursive, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 2rem;
+      color: #ff3e3e;
+      text-shadow: 2px 2px #ffd5d5;
+    }
+    .levels-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      align-items: center;
+    }
+    .level-button,
+    a.level-button {
+      width: 220px;
+      padding: 1rem;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 15px;
+      background: #ff6464;
+      color: white;
+      cursor: pointer;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s ease, background 0.3s ease;
+      text-decoration: none;
+      font-family: inherit;
+    }
+    .level-button:hover,
+    a.level-button:hover {
+      background: #ff3e3e;
+      transform: scale(1.05);
+    }
+    /* Back to Home Button */
+    .back-to-home {
+      margin-top: 30px;
+      padding: 10px 20px;
+      background: #ff6464;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: background 0.3s ease;
+    }
+    .back-to-home:hover {
+      background: #ff3e3e;
+    }
+    /* Mute/Unmute music button (optional) */
+    #music-toggle {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.8);
+      border: 2px solid #ff3e3e;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+  <!-- Full-screen background image -->
+  <div class="cover-background"></div>
+
+  <!-- Background music (looped, tries to autoplay) -->
+  <audio id="bgMusic" src="{% static 'sounds/game-music-loop-7-145285.mp3' %}" loop autoplay></audio>
+  <!-- Optional Mute/Unmute button -->
+  <button id="music-toggle">Mute Music</button>
+
+  <h1>Select a Level</h1>
+  <div class="levels-container">
+    <a href="{% url 'firstaid' %}" class="level-button">First Aid</a>
+    <a href="{% url 'knee_game' %}" class="level-button">Knee Knockdown</a>
+    <a href="{% url 'fever_game' %}" class="level-button">Fever Mania</a>
+    <a href="{% url 'burn_game' %}" class="level-button">Burn Emergency</a>
+  </div>
+  <!-- Back to Home Button -->
+  <a href="{% url 'home' %}" class="back-to-home">Back to Home</a>
+
+  <!-- Audio element for click sound -->
+  <audio id="clickSound" src="{% static 'sounds/click.mp3' %}"></audio>
+
+  <!-- CSRF Token and Logging Setup -->
+  {% csrf_token %}
+  <script>
+    const csrfToken = '{{ csrf_token }}';
+
+    // Retrieve CSRF token from cookies (if needed)
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + "=")) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    // Global logging function: sends log data to the /log_event/ endpoint
+    function logData(dataObj) {
+      const timestamp = new Date().toISOString();
+      const logEntry = {
+        timestamp: timestamp,
+        page: dataObj.page || "Play Page",
+        player: localStorage.getItem("playerName") || "Guest",
+        event: dataObj.event || ""
+      };
+      console.log("Logging event:", logEntry);
+      fetch("/log_event/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken")
+        },
+        body: JSON.stringify(logEntry)
+      }).catch(err => console.error("Error logging event:", err));
+    }
+
+    // Log page load event
+    document.addEventListener("DOMContentLoaded", () => {
+      logData({ page: "Play Page", event: "Page Loaded" });
+    });
+  </script>
+
+  <script>
+    /************************************************************
+     * 1. Speech Synthesis: Kid-friendly voice using Brian voice if available
+     *************************************************************/
+    const synth = window.speechSynthesis;
+    let voices = [];
+    function speak(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      const selectedVoice = voices.find(v => v.name.includes("BrianMultilingual") || v.name.includes("Brian"));
+      if(selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
+      utterance.rate = 1.1;  // slightly faster
+      utterance.pitch = 1.1; // slightly higher pitch
+      synth.speak(utterance);
+    }
+    // Immediately stop any ongoing speech
+    function stopSpeech() {
+      speechSynthesis.cancel();
+    }
+    function loadVoices() {
+      voices = synth.getVoices();
+      if(!voices.length) {
+        setTimeout(loadVoices, 100);
+      } else {
+        // Greet the user when voices are ready
+        speak("Hello friend! Choose a first aid level first to learn all about making a first aid kit and more!");
+      }
+    }
+    document.addEventListener("DOMContentLoaded", loadVoices);
+
+    /************************************************************
+     * 2. Autoplay Music and Mute/Unmute Control
+     *************************************************************/
+    document.addEventListener("DOMContentLoaded", function(){
+      const bgMusic = document.getElementById("bgMusic");
+      bgMusic.play().catch(err => {
+        console.warn("Music autoplay might be blocked; it will start after user interaction", err);
+      });
+
+      // Music toggle button
+      const musicToggle = document.getElementById("music-toggle");
+      musicToggle.addEventListener("click", () => {
+        bgMusic.muted = !bgMusic.muted;
+        musicToggle.textContent = bgMusic.muted ? "Unmute Music" : "Mute Music";
+        logData({ page: "Play Page", event: "Music toggle clicked. Muted: " + bgMusic.muted });
+      });
+    });
+
+    /************************************************************
+     * 3. Button Navigation Logging and Click Sound
+     *************************************************************/
+    // Add click sound and log events for level selection and back-to-home buttons
+    document.addEventListener("DOMContentLoaded", function(){
+      const clickableElements = document.querySelectorAll(".level-button, .back-to-home");
+      clickableElements.forEach(el => {
+        el.addEventListener("mousedown", function(){
+          // Stop any ongoing speech
+          stopSpeech();
+          // Play click sound
+          const clickAudio = document.getElementById("clickSound");
+          clickAudio.currentTime = 0;
+          clickAudio.play();
+          // Log the button click with element text content as event
+          logData({ page: "Play Page", event: "Button Click: " + (el.textContent || el.innerText) });
+        });
+      });
+    });
+  </script>
+</body>
+</html>

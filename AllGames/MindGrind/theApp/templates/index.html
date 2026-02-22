@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MindGrind</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Parkinsans&family=Spicy+Rice&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <script type="text/javascript" src="{% static 'js/index.js' %}">
+  </script>
+</head>
+<body>
+
+<div class="container">
+  <div class="player playerOne">
+    <h1 class="playerTitle playerOneTitle">{{ player1 }}  Score: {{ score1 }}</h1>
+    <div class="buttonPlace" onclick="startListening(1)">
+      <div class="button button1">
+        <a href="#" id="button1"></a>
+      </div>
+    </div>
+  </div>
+  <div class="host">
+    
+    
+    {% if feedback %}
+        <p class="feedbackText"><strong>{{ feedback }}</strong></p>
+        <form method="POST">
+            {% csrf_token %}
+            <button type="submit" class="Btn">Next</button>
+        </form>
+    {% else %}
+
+    <form class="questionPlace" method="POST">
+      {% csrf_token %}
+      <div>
+          <p class="questionText">{{ question.text }}</p>
+
+          {% comment %} <label class="Answers">
+              <input type="radio" name="answer" value="{{ question.correct_answer }}" required>
+              {{ question.correct_answer }}
+          </label>
+
+          {% for answer in question.incorrect_answers %}
+          <label class="Answer">
+              <input type="radio" name="answer" value="{{ answer }}">
+              {{ answer }}
+          </label>
+          {% endfor %} {% endcomment %}
+          <input type="text" name="answer" id="answer" class="answer">
+      </div>
+
+      <button class="Btn" type="submit" onclick="submitAnswer">Submit</button>
+    </form>
+  {% endif %}
+    
+  <img class="hostImg" src="{% static "images/robotPodium.png" %}">
+  </div>
+  <div class="player playerTwo">
+    <h1 class="playerTitle playerTwoTitle">{{player2}}  Score: {{ score2 }}</h1>
+    <div class="buttonPlace" onclick="startListening(2)">
+      <div class="button button2">
+        <a href="#" id="button2"></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p hidden id="correct_answer" value="{{ question.correct_answer }}">{{ question.correct_answer }}</p> 
+
+<script>
+
+</script>
+
+</body>
+</html>

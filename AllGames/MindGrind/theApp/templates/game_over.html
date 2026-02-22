@@ -1,0 +1,16 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Game Over</title>
+    <link rel="stylesheet" href= "{% static "css/gameOver.css" %}">
+</head>
+<body>
+  <div class="container">
+    <h1>The result is:</h1>
+    <p>{{endMessage}}</p>
+    <p>Thanks for playing MindGrind!</p>
+    <button class="resetButton" type="submit"><a href="{% url 'Intro' %}">Try Again!</a></button>
+  </div>
+</body>
+</html>

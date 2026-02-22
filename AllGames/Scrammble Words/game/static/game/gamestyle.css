@@ -1,0 +1,91 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: url("images/gameplay2.webp") no-repeat center center fixed;
+    background-size: cover;
+}
+
+/* Center container using flexbox */
+.center-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100vh; /* Full viewport height */
+    color: #000000;
+}
+
+h1 {
+    font-size: 3em !important;
+    color: #fff;
+    text-shadow:
+        2px 2px 3px rgba(0, 0, 0, 0.6),
+        4px 4px 3px rgba(0, 0, 0, 0.3);
+}
+
+a {
+    font-size: 20px;
+    padding: 10px 20px;
+    background: linear-gradient(45deg, #007BFF, #0056b3);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+a:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+}
+
+h1, h2 {
+    color: #000000;
+}
+
+form {
+    margin-top: 20px;
+}
+
+input {
+    padding: 12px 15px;
+    font-size: 18px;
+    width: 300px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+
+#exit-button {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  padding: 10px 20px;
+  background: linear-gradient(45deg, #007BFF, #0056b3);
+  color: #fff;
+  text-decoration: none;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#exit-button:hover {
+  transform: translateX(-50%) translateY(-0.5px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+
+
+

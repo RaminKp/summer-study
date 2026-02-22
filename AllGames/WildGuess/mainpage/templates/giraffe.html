@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WildGuess</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Parkinsans&family=Spicy+Rice&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <script type="text/javascript" src="{% static 'javaScript/giraffe.js' %}">
+  </script>
+</head>
+
+
+<body>
+  <a href="{% url 'start' %}"><img class="backBtn" src="{% static 'images/backbutton.png' %}" alt=""></a>
+<div class="container">
+
+  <div class="traitBox" id="traitBox">
+    <h1>Traits</h1>
+    <!--TraitBoxInput's added by javascript-->
+  </div>
+
+  <!-- This is where we put the animal's image -->
+  <div class="animalImage">
+    <h1 class="playerTitle playerOneTitle">Welcome, {{ player1 }}.</h1>
+    <img class="backgroundAnimal" src="{% static 'images/crocodile.png' %}" alt="">
+    <img class="backgroundAnimal" src="{% static 'images/lion.png' %}" alt="">
+    <img class="backgroundAnimal" src="{% static 'images/turtle.png' %}" alt="">
+    <img class="backgroundAnimal" src="{% static 'images/giraffe.png' %}" alt="">
+    <img class="backgroundAnimal" src="{% static 'images/rhino.png' %}" alt="">
+    <img id="penguinImg" class="img penguinImg" src="{% static 'images/giraffe.png' %}" alt="Penguin">
+    <p id="hoverText" class="hoverText">
+      Giraffes possess several distinctive traits that help them thrive in their natural habitats. Their long necks enable them to reach high foliage for feeding, while their unique spotted coats provide camouflage among trees. Giraffes are social animals, often forming loose herds, and they communicate using various vocalizations and body language. Their height allows them to spot predators from a distance, giving them an advantage for survival. Giraffes have a specialized diet consisting mainly of leaves and shoots, which they grasp with their long tongues. Additionally, their unique walking pattern, moving both legs on one side of their body at a time, helps them navigate their environment efficiently.</p>
+    <img id="questionImg" class="img questionImg" src="{% static 'images/question.png' %}" alt="Penguin">
+    <br>
+    <p id="scoreMessage" class="scoreMessage"></p>
+    <button id="submitBtn" class="btn submitBtn" type="submit">Submit</button>
+    <br>
+    <button id="nextBtn" class="btn nextBtn" type="submit">
+      <a class="href" href="{% url 'wolf' %}">Next Game</a>
+    </button>
+  </div>
+
+  <!-- This is where we put Specifications -->
+  <div class="specsBox">
+    <h1>Specifications</h1>
+    <p class="specsBoxText">I live in warm, open areas with scattered trees and little shade.</p>
+    <br>
+    <p class="specsBoxText">I walk in a unique way, moving both legs on one side of my body at the same time.</p>
+    <br>
+    <p class="specsBoxText">My tongue is dark-colored, which helps protect it from the sun while I eat.</p>
+    <br>
+  </div>
+</div>
+
+<script>
+  onPageLoad();
+</script>
+
+</body>
+</html>

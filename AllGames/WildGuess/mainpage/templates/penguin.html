@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WildGuess</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Parkinsans&family=Spicy+Rice&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <script type="text/javascript" src="{% static 'javaScript/penguin.js' %}">
+  </script>
+</head>
+
+
+<body>
+<a href="{% url 'start' %}"><img class="backBtn" src="{% static 'images/backbutton.png' %}" alt=""></a>
+<div class="container">
+
+  <div class="traitBox" id="traitBox">
+
+    <h1>Traits</h1>
+    <!--TraitBoxInput's added by javascript-->
+  </div>
+
+  <!-- This is where we put the animal's image -->
+  <div class="animalImage">
+    <h1 class="playerTitle playerOneTitle">Welcome, {{ player1 }}.</h1>
+    <img class="backgroundAnimal" src="{% static 'images/crocodile.png' %}" alt="">
+    <img class="backgroundAnimal" src="{% static 'images/penguin.png' %}" alt="">
+    <img class="backgroundAnimal" src="{% static 'images/turtle.png' %}" alt="">
+    <img class="backgroundAnimal" src="{% static 'images/tiger.png' %}" alt="">
+    <img class="backgroundAnimal" src="{% static 'images/rhino.png' %}" alt="">
+    <img id="penguinImg" class="img penguinImg" src="{% static 'images/penguin.png' %}" alt="Penguin">
+    <p id="hoverText" class="hoverText">Penguins exhibit unique traits that contribute to their survival in cold environments. They have flippers instead of wings, making them exceptional swimmers, while their distinct black and white coloration provides camouflage in the water. Penguins are social animals, often forming large colonies for breeding and protection. They have a specialized breeding cycle, with both parents sharing the responsibility of incubating eggs and caring for chicks. Their ability to huddle together helps them conserve heat in freezing temperatures, and their diet mainly consists of fish and krill, which they catch with their beaks.</p>
+    <img id="questionImg" class="img questionImg" src="{% static 'images/question.png' %}" alt="Penguin">
+    <br>
+    <p id="scoreMessage" class="scoreMessage"></p>
+    <button id="submitBtn" class="btn submitBtn" type="submit">Submit</button>
+    <br>
+    <button id="nextBtn" class="btn nextBtn" type="submit">
+      <a class="href" href="{% url 'giraffe' %}">Next Game</a>
+    </button>
+  </div>
+
+  <!-- This is where we put Specifications -->
+  <div class="specsBox">
+    <h1>Specifications</h1>
+    <p class="specsBoxText">I live in very cold places, but some of my kind enjoy warmer areas too</p>
+    <br>
+    <p class="specsBoxText">I cannot fly, but I am an excellent swimmer.</p>
+    <br>
+    <p class="specsBoxText">I don’t have teeth, but I can still catch my food easily</p>
+    <br>
+  </div>
+</div>
+
+<script>
+  onPageLoad();
+</script>
+
+</body>
+</html>

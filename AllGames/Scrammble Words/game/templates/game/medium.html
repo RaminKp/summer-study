@@ -1,0 +1,106 @@
+{% load static %}
+<html lang="en">
+<head>
+    <title>Game Result</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'game/gamestyle.css' %}">
+    <style>
+      #exit-button {
+          position: fixed;
+          bottom: 10px;
+          left: 50%;
+          transform: translateX(-50%);
+          font-size: 20px;
+          padding: 10px 20px;
+          background: linear-gradient(45deg, #007BFF, #0056b3);
+          color: #fff;
+          text-decoration: none;
+          border-radius: 5px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+          transition: transform 0.2s, box-shadow 0.2s;
+      }
+      #exit-button:hover {
+          transform: translateX(-50%) translateY(-0.5px);
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+    <script>
+      // Logging function
+      function logEvent(screen, event) {
+          fetch('/log-event/', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': '{{ csrf_token }}'
+              },
+              body: JSON.stringify({
+                  screen: screen,
+                  player: "{{ player_name }}",
+                  event: event
+              })
+          })
+          .then(response => {
+              if (!response.ok) {
+                  console.error("Logging failed", response.statusText);
+              }
+          })
+          .catch(error => console.error("Error logging event:", error));
+      }
+
+      // TTS for game result messages (using your provided snippet)
+      function playResultMessage() {
+          const resultText = "{{ result|escapejs }}";
+          const correctCount = Number("{{ correct_count|default:'0' }}");
+          const wrongCount = Number("{{ wrong_count|default:'0' }}");
+          let message = "";
+          if (resultText.indexOf("Oops") !== -1) {
+              if (wrongCount === 2) {
+                  message = "That's not right — you've made 2 mistakes so far. Keep trying!";
+              } else if (wrongCount === 4) {
+                  message = "Hmm, 4 wrong answers. Focus and try again!";
+              } else if (wrongCount === 6) {
+                  message = "6 mistakes already? It's a tough round, but you can improve. Keep at it!";
+              } else if (wrongCount === 7) {
+                  message = "7 mistakes, but every mistake is a step toward success. Keep learning!";
+              } else if (wrongCount === 8) {
+                  message = "8 wrong answers — don't give up! You'll get it next time!";
+              } else {
+                  message = "Incorrect answer. Remember, practice makes perfect — try again!";
+              }
+          } else if (resultText.indexOf("Correct") !== -1) {
+              if (correctCount === 2) {
+                  message = "Nice start! You've got 2 words right. Keep building that momentum!";
+              } else if (correctCount === 4) {
+                  message = "Wow, you're on fire! You've guessed 4 words correctly! Keep it up!";
+              } else if (correctCount === 7) {
+                  message = "Amazing work! You've hit 7 correct answers! You're really getting the hang of this!";
+              } else if (correctCount === 9) {
+                  message = "Incredible! 9 words correct! You're unstoppable!";
+              } else {
+                  message = "Great job! You got it right. Keep up the good work!";
+              }
+          } else {
+              message = "Let's try again!";
+          }
+          const ttsUrl = `/tts/?text=${encodeURIComponent(message)}`;
+          const audio = new Audio(ttsUrl);
+          audio.muted = true;
+          audio.play().then(() => {
+              audio.muted = false;
+          }).catch(err => console.error("Audio play error:", err));
+      }
+
+      window.onload = function() {
+          playResultMessage();
+      }
+    </script>
+</head>
+<body>
+    <a id="exit-button" href="{% url 'select_difficulty' %}" onclick="logEvent('Medium Game Result', 'Exit Button Clicked');">Exit</a>
+    <div class="center-container">
+        <h1>{{ result }}</h1>
+        <h2>Your answer: {{ user_guess }}</h2>
+        <h2>Correct Word: {{ correct_word }}</h2>
+        <a href="{% url 'medium_game' %}" onclick="logEvent('Medium Game Result', 'Next Button Clicked');">Next</a>
+    </div>
+</body>
+</html>

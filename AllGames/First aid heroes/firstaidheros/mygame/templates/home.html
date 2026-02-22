@@ -1,0 +1,319 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>First Aid Heroes</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+
+  <style>
+    /* Full-screen background image */
+    .cover-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      background: url("{% static 'images/background_cover.png' %}") no-repeat center center;
+      background-size: cover;
+    }
+    /* Content container positioned over the background */
+    .cover-content {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 20px;
+      color: white;
+    }
+    /* Title styling */
+    .cover-content h1 {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+    }
+    /* Main buttons (Play, Scoreboard, Tutorial) */
+    .main-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      align-items: center;
+    }
+    .main-buttons button {
+      width: 200px;
+      padding: 1rem;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 15px;
+      background: #ff6464;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.3s ease, background 0.3s ease;
+    }
+    .main-buttons button:hover {
+      background: #ff3e3e;
+      transform: scale(1.05);
+    }
+    /* Corner Buttons (top-right) */
+    .corner-buttons {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      z-index: 20;
+    }
+    .corner-buttons button {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: none;
+      background-color: #eee;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: background 0.3s ease;
+    }
+    .corner-buttons button:hover {
+      background-color: #ddd;
+    }
+    /* Restart Game button (if needed) */
+    .restart-button {
+      width: 200px;
+      padding: 1rem;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 15px;
+      background: #ff6464;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.3s ease, background 0.3s ease;
+      margin-top: 20px;
+    }
+    .restart-button:hover {
+      background: #ff3e3e;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Logging and CSRF helper functions -->
+  <script>
+    // CSRF token retrieval function
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + "=")) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    // Logging function: Sends log data to the backend logging endpoint
+    function logData(dataObj) {
+      const timestamp = new Date().toISOString();
+      const logEntry = {
+        timestamp: timestamp,
+        page: dataObj.page || "Unknown",
+        player: localStorage.getItem("playerName") || "Guest",
+        event: dataObj.event || ""
+      };
+      console.log("Logging event:", logEntry);
+      fetch("/log_event/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken")
+        },
+        body: JSON.stringify(logEntry)
+      }).catch(err => console.error("Error logging event:", err));
+    }
+  </script>
+
+  <!-- Attempt early autoplay in a script at the top of the body -->
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      // Log the page load event
+      logData({ page: "Home Page", event: "Page Loaded" });
+
+      // We'll play the music again after DOM is fully loaded
+      // but let's attempt it early as well.
+      const bgMusic = document.getElementById("bgMusic");
+      if (bgMusic) {
+        bgMusic.play().catch(err => {
+          console.warn("Autoplay blocked early. Will try again after DOM is ready.", err);
+        });
+      }
+    });
+  </script>
+
+  <!-- Full-screen background image -->
+  <div class="cover-background"></div>
+
+  <!-- Content overlay -->
+  <div class="cover-content">
+    <h1>First Aid Heroes</h1>
+    <div class="main-buttons">
+      <button id="playBtn">Play</button>
+      <button id="scoreboardBtn">Scoreboard</button>
+      <button id="tutorialBtn">Tutorial</button>
+    </div>
+  </div>
+
+  <!-- Corner Buttons (top-right) -->
+  <div class="corner-buttons">
+    <button id="chatbotBtn" title="AI Chatbot">🤖</button>
+    <button id="musicBtn" title="Toggle Mute">🎵</button>
+    <button title="Settings">⚙️</button>
+  </div>
+
+  <!-- Audio elements -->
+  <audio id="clickSound" src="{% static 'sounds/click.mp3' %}"></audio>
+  <audio
+    id="bgMusic"
+    src="{% static 'sounds/game-music-loop-7-145285.mp3' %}"
+    loop
+    autoplay
+    playsinline
+  ></audio>
+
+  <script>
+    /************************************************************
+     * 1. Speech Synthesis Setup
+     *************************************************************/
+    const synth = window.speechSynthesis;
+    let voices = [];
+
+    function speak(text, callback) {
+      // Log the voice event
+      logData({ page: "Home Page", event: "Voice: " + text });
+
+      const bgMusic = document.getElementById("bgMusic");
+      const utterance = new SpeechSynthesisUtterance(text);
+
+      // Attempt to find "BrianMultilingual" or "Brian"
+      let selectedVoice = voices.find(v => v.name.includes("BrianMultilingual") || v.name.includes("Brian"));
+      if (!selectedVoice && voices.length > 0) {
+        selectedVoice = voices[0];
+      }
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
+
+      let originalVolume = bgMusic ? bgMusic.volume : 1;
+      utterance.onstart = () => {
+        if (bgMusic && !bgMusic.muted) {
+          bgMusic.volume = 0.2;
+        }
+      };
+      utterance.onend = () => {
+        if (bgMusic && !bgMusic.muted) {
+          bgMusic.volume = originalVolume;
+        }
+        if (callback) callback();
+      };
+      utterance.rate = 1.1;
+      utterance.pitch = 1.1;
+      synth.speak(utterance);
+    }
+
+    function loadVoices() {
+      voices = synth.getVoices();
+      if (!voices.length) {
+        setTimeout(loadVoices, 100);
+      } else {
+        speak("Welcome to First Aid Heroes. Click a button to start playing!");
+      }
+    }
+    loadVoices();
+
+    /************************************************************
+     * 2. DOMContentLoaded: Force music again, handle buttons
+     *************************************************************/
+    document.addEventListener("DOMContentLoaded", () => {
+      const bgMusic = document.getElementById("bgMusic");
+
+      // Attempt to play the music (again). If blocked, it will start on user interaction.
+      bgMusic.play().catch(err => {
+        console.warn("Autoplay blocked on DOM load. Music will start after user interacts.", err);
+      });
+
+      // Play click sound on all buttons and log button clicks
+      document.querySelectorAll("button").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const clickAudio = document.getElementById("clickSound");
+          clickAudio.currentTime = 0;
+          clickAudio.play();
+
+          // Log button click event with button id or text
+          logData({ page: "Home Page", event: "Button Click: " + (btn.id || btn.textContent) });
+
+          // If the music was blocked, this click might trigger it
+          if (bgMusic.paused) {
+            bgMusic.play().catch(err => console.warn("Still blocked or error playing music.", err));
+          }
+        });
+      });
+
+      // 'Play' button: prompt for player name, log the event, and redirect
+      document.getElementById("playBtn").addEventListener("click", () => {
+        let playerName = window.prompt("Please enter your name:");
+        if (!playerName || playerName.trim() === "") {
+          playerName = "Player";
+        }
+        localStorage.setItem("playerName", playerName);
+        logData({ page: "Home Page", event: "Player Name Entered: " + playerName });
+
+        const greetMsg = `Hello ${playerName}, are you ready to play?`;
+        speak(greetMsg, () => {
+          const userReady = confirm("Are you ready to begin the game?");
+          if (userReady) {
+            logData({ page: "Home Page", event: "Player confirmed readiness to play" });
+            window.location.href = "/set_player/?name=" + encodeURIComponent(playerName);
+          }
+        });
+      });
+
+      // Scoreboard button
+      document.getElementById("scoreboardBtn").addEventListener("click", () => {
+        logData({ page: "Home Page", event: "Scoreboard button clicked" });
+        window.location.href = "/scoreboard_all/";
+      });
+
+      // Tutorial button
+      document.getElementById("tutorialBtn").addEventListener("click", () => {
+        logData({ page: "Home Page", event: "Tutorial button clicked" });
+        window.location.href = "/tutorial/";
+      });
+
+      // Optional: restart button if present
+      const restartBtn = document.getElementById("restartBtn");
+      if (restartBtn) {
+        restartBtn.addEventListener("click", () => {
+          localStorage.removeItem("playerName");
+          logData({ page: "Home Page", event: "Restart button clicked - player name removed" });
+          location.reload();
+        });
+      }
+
+      // Mute/Unmute music button
+      const musicBtn = document.getElementById("musicBtn");
+      if (musicBtn && bgMusic) {
+        musicBtn.addEventListener("click", () => {
+          bgMusic.muted = !bgMusic.muted;
+          logData({ page: "Home Page", event: "Music toggled. Muted: " + bgMusic.muted });
+        });
+      }
+    });
+  </script>
+</body>
+</html>
